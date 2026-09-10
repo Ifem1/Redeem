@@ -41,7 +41,7 @@ def test_contract_has_refund_without_verdict():
 
 def test_manifest_namespaces_are_phase_isolated():
     source=open('contracts/redeem.py').read()
-    assert 'u256(200) if challenge else u256(100)' in source
+    assert 'u256(500) if challenge else u256(0)' in source
 
 def test_retry_spacing_is_enforced():
     source=open('contracts/redeem.py').read()
