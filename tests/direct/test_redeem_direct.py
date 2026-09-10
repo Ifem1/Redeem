@@ -25,7 +25,7 @@ def addr(contract, value):
 
 def create(vm, contract, issuer, beneficiary, escrow=1000):
     issuer, beneficiary = addr(contract, issuer), addr(contract, beneficiary)
-    vm._datetime = "1970-01-01T00:00:01Z"
+    vm.warp("1970-01-01T00:00:01Z")
     vm.sender, vm.value = issuer, escrow
     contract.create_guarantee(beneficiary, "Uptime", "Service remains available", 0, 100, 0, 200, escrow, SOURCE, OUTCOMES)
 
@@ -94,7 +94,7 @@ def test_direct_constants_expose_safety_limits(direct_deploy):
 def test_direct_expiry_refunds_escrow(direct_vm, direct_deploy, direct_alice, direct_bob):
     c = deploy(direct_deploy); create(direct_vm, c, direct_alice, direct_bob)
     direct_vm.sender = addr(c, direct_alice)
-    direct_vm._datetime = "1970-01-01T00:03:21Z"
+    direct_vm.warp("1970-01-01T00:03:21Z")
     c.reclaim_expired_guarantee(1)
     assert c.status_label(1) == "EXPIRED_REFUNDED"
     assert c.get_guarantee_accounting(1)["escrow_remaining"] == 0
@@ -103,3 +103,4 @@ def test_direct_expiry_refunds_escrow(direct_vm, direct_deploy, direct_alice, di
 @pytest.mark.direct
 def test_direct_unknown_guarantee_reverts(direct_deploy):
     with pytest.raises(AssertionError): deploy(direct_deploy).get_guarantee(99)
+
