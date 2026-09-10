@@ -6,7 +6,7 @@ Redeem is a GenLayer-native escrow protocol for one issuer and one named benefic
 
 ## Status
 
-This repository contains the initial implementation scaffold. It is not deployed or live until a deployment address and verification evidence are added here.
+This repository contains the reviewed implementation: a 21-method Redeem contract, a GenLayerJS external-wallet frontend, pinned validation tooling, and Direct Mode contract execution tests. A fresh Studionet deployment is performed only from the final green commit; see docs/DEPLOYMENT.md.
 
 ## Development
 

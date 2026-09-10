@@ -259,6 +259,44 @@
       "readonly": true,
       "ret": "array"
     },
+    "list_guarantees_by_beneficiary": {
+      "params": [
+        [
+          "beneficiary",
+          "address"
+        ],
+        [
+          "start",
+          "int"
+        ],
+        [
+          "limit",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "array"
+    },
+    "list_guarantees_by_issuer": {
+      "params": [
+        [
+          "issuer",
+          "address"
+        ],
+        [
+          "start",
+          "int"
+        ],
+        [
+          "limit",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "array"
+    },
     "open_redemption": {
       "params": [
         [
