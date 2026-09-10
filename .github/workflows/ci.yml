@@ -1,0 +1,23 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: '3.12' }
+      - run: pip install -r requirements.txt
+      - run: genvm-lint check contracts/redeem.py --json
+      - run: genvm-lint schema contracts/redeem.py --output artifacts/redeem.schema.json
+      - run: PYTHONIOENCODING=utf-8 genvm-lint typecheck contracts/redeem.py
+      - run: pytest tests/direct -v
+  web:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: apps/web } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: '20', cache: npm, cache-dependency-path: apps/web/package.json }
+      - run: npm install
+      - run: npm run build

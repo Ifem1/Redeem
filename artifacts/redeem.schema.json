@@ -1,0 +1,189 @@
+{
+  "ctor": {
+    "params": [],
+    "kwparams": {}
+  },
+  "methods": {
+    "challenge_redemption": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ],
+        [
+          "reason",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": true
+    },
+    "create_guarantee": {
+      "params": [
+        [
+          "beneficiary",
+          "address"
+        ],
+        [
+          "title",
+          "string"
+        ],
+        [
+          "terms",
+          "string"
+        ],
+        [
+          "coverage_start",
+          "int"
+        ],
+        [
+          "coverage_end",
+          "int"
+        ],
+        [
+          "evaluation_earliest_at",
+          "int"
+        ],
+        [
+          "claim_deadline",
+          "int"
+        ],
+        [
+          "source_urls",
+          "string"
+        ],
+        [
+          "outcome_codes",
+          "string"
+        ],
+        [
+          "payout_bps",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": true
+    },
+    "evaluate_redemption": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "finalize_inconclusive": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "finalize_redemption": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "finalize_stalled_challenge": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "get_guarantee": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "string"
+    },
+    "get_status": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "int"
+    },
+    "open_redemption": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "reclaim_expired_guarantee": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "resolve_challenge": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "status_label": {
+      "params": [
+        [
+          "status",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "string"
+    }
+  }
+}

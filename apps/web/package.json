@@ -1,0 +1,1 @@
+{"name":"redeem-web","private":true,"version":"0.1.0","type":"module","scripts":{"build":"vite build","dev":"vite"},"dependencies":{"vite":"^6.0.0","viem":"^2.21.0"},"devDependencies":{}}
