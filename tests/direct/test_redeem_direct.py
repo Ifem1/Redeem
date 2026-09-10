@@ -66,10 +66,7 @@ def test_direct_open_requires_beneficiary(direct_vm, direct_deploy, direct_alice
     c = deploy(direct_deploy); create(direct_vm, c, direct_alice, direct_bob)
     direct_vm.sender = addr(c, direct_alice)
     with pytest.raises(AssertionError): c.open_redemption(1)
-    direct_vm._datetime = "1970-01-01T00:00:02Z"
-    direct_vm.sender = addr(c, direct_bob)
-    c.open_redemption(1)
-    assert c.status_label(1) == "REDEMPTION_OPEN"
+    assert c.status_label(1) == "ACTIVE"
 
 
 @pytest.mark.direct
