@@ -125,6 +125,10 @@
           "int"
         ],
         [
+          "phase",
+          "int"
+        ],
+        [
           "r",
           "int"
         ]
@@ -133,6 +137,7 @@
       "readonly": true,
       "ret": {
         "guarantee_id": "int",
+        "phase": "string",
         "round": "int",
         "evaluated_at": "int",
         "status": "string",
