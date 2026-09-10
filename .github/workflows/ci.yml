@@ -9,7 +9,9 @@ jobs:
         with: { python-version: '3.12' }
       - run: pip install -r requirements.txt
       - run: genvm-lint check contracts/redeem.py --json
+      - run: genvm-lint validate contracts/redeem.py
       - run: genvm-lint schema contracts/redeem.py --output artifacts/redeem.schema.json
+      - run: git diff --exit-code artifacts/redeem.schema.json
       - run: PYTHONIOENCODING=utf-8 genvm-lint typecheck contracts/redeem.py
       - run: pytest tests/direct -v
   web:
@@ -19,5 +21,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '20', cache: npm, cache-dependency-path: apps/web/package.json }
-      - run: npm install
+      - run: npm ci
       - run: npm run build

@@ -1,6 +1,6 @@
-import { createClient, createAccount } from 'file:///C:/Users/DELL/AppData/Roaming/npm/node_modules/genlayer/node_modules/genlayer-js/dist/index.js'
-import { CalldataAddress } from 'file:///C:/Users/DELL/AppData/Roaming/npm/node_modules/genlayer/node_modules/genlayer-js/dist/chunk-EY35NPSE.js'
-import { studionet } from 'file:///C:/Users/DELL/AppData/Roaming/npm/node_modules/genlayer/node_modules/genlayer-js/dist/chains/index.js'
+import { createClient, createAccount } from 'genlayer-js'
+import { CalldataAddress } from 'genlayer-js/types'
+import { studionet } from 'genlayer-js/chains'
 
 const address = process.env.REDEEM_CONTRACT
 const safe = (value) => JSON.stringify(value, (_, v) => typeof v === 'bigint' ? v.toString() : v)

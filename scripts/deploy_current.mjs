@@ -1,5 +1,5 @@
-import { createClient, createAccount } from 'file:///C:/Users/DELL/AppData/Roaming/npm/node_modules/genlayer/node_modules/genlayer-js/dist/index.js'
-import { studionet } from 'file:///C:/Users/DELL/AppData/Roaming/npm/node_modules/genlayer/node_modules/genlayer-js/dist/chains/index.js'
+import { createClient, createAccount } from 'genlayer-js'
+import { studionet } from 'genlayer-js/chains'
 const client=createClient({chain:studionet, account:createAccount(process.env.REDEEM_ISSUER)})
 import { readFile } from 'node:fs/promises'
 const code=await readFile('contracts/redeem.py','utf8')
