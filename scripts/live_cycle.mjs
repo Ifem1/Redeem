@@ -14,7 +14,9 @@ async function finalized(client, hash) {
   throw new Error(`timed out waiting for ${hash}`)
 }
 const beneficiaryAddress = new CalldataAddress(Uint8Array.from(Buffer.from(process.env.REDEEM_BENEFICIARY.slice(2), 'hex')))
-const args = [beneficiaryAddress, 'Live service guarantee', 'A public uptime promise', 0n, 4102444800n, 0n, 4102444800n, 'https://example.com', 'OK\nBREACH', '0,10000']
+const sources = JSON.stringify([{ label:'Example primary', url:'https://example.com', authority:'PRIMARY', required:true }])
+const outcomes = JSON.stringify([{ code:'NO_BREACH', description:'No breach established', payout_bps:0 }, { code:'BREACH', description:'Breach established', payout_bps:10000 }])
+const args = [beneficiaryAddress, 'Live service guarantee', 'A public uptime promise', 0n, 4102444800n, 0n, 4102444800n, 1000000000000000000n, sources, outcomes]
 const createHash = await issuer.writeContract({ address, functionName: 'create_guarantee', args, value: 1000000000000000000n })
 console.log('create', createHash)
 const createReceipt=await finalized(issuer,createHash); console.log('create-receipt',safe(createReceipt)); if(createReceipt.status_name!=='FINALIZED') throw new Error('creation did not finalize')

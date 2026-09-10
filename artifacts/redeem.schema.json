@@ -7,12 +7,8 @@
     "challenge_redemption": {
       "params": [
         [
-          "guarantee_id",
+          "i",
           "int"
-        ],
-        [
-          "reason",
-          "string"
         ]
       ],
       "kwparams": {},
@@ -51,15 +47,15 @@
           "int"
         ],
         [
-          "source_urls",
+          "escrow_amount",
+          "int"
+        ],
+        [
+          "source_rules_json",
           "string"
         ],
         [
-          "outcome_codes",
-          "string"
-        ],
-        [
-          "payout_bps",
+          "outcome_rules_json",
           "string"
         ]
       ],
@@ -71,7 +67,19 @@
     "evaluate_redemption": {
       "params": [
         [
-          "guarantee_id",
+          "i",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "finalize_inconclusive": {
+      "params": [
+        [
+          "i",
           "int"
         ]
       ],
@@ -83,7 +91,7 @@
     "finalize_redemption": {
       "params": [
         [
-          "guarantee_id",
+          "i",
           "int"
         ]
       ],
@@ -92,10 +100,52 @@
       "ret": "any",
       "payable": false
     },
+    "finalize_stalled_challenge": {
+      "params": [
+        [
+          "i",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "get_contract_accounting": {
+      "params": [],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_evidence_manifest": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "r",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": {
+        "guarantee_id": "int",
+        "round": "int",
+        "evaluated_at": "int",
+        "status": "string",
+        "outcome_code": "string",
+        "reasoning": "string",
+        "evidence": "string",
+        "source_count": "int"
+      }
+    },
     "get_guarantee": {
       "params": [
         [
-          "guarantee_id",
+          "i",
           "int"
         ]
       ],
@@ -108,37 +158,83 @@
         "terms": "string",
         "sources": "string",
         "outcomes": "string",
-        "payouts": "string",
-        "escrow": "int",
+        "escrow_total": "int",
+        "escrow_remaining": "int",
+        "beneficiary_paid": "int",
+        "issuer_refunded": "int",
         "status": "int",
-        "redemption": "bool",
         "coverage_start": "int",
         "coverage_end": "int",
         "evaluation_earliest_at": "int",
         "claim_deadline": "int",
+        "opened_at": "int",
+        "review_attempts": "int",
+        "last_review_status": "string",
         "provisional_code": "string",
         "provisional_amount": "int",
-        "challenge_bond": "int",
-        "challenger": "address",
         "challenge_deadline": "int",
-        "evaluation_attempts": "int"
+        "challenger": "address",
+        "challenge_bond": "int",
+        "challenge_opened_at": "int",
+        "challenge_attempts": "int",
+        "last_challenge_status": "string",
+        "final_code": "string",
+        "final_bps": "int",
+        "final_amount": "int",
+        "terminal_reason": "string"
       }
     },
-    "get_status": {
+    "get_guarantee_accounting": {
       "params": [
         [
-          "guarantee_id",
+          "i",
           "int"
         ]
       ],
       "kwparams": {},
       "readonly": true,
+      "ret": "dict"
+    },
+    "get_guarantee_counter": {
+      "params": [],
+      "kwparams": {},
+      "readonly": true,
       "ret": "int"
+    },
+    "get_outcome_rule": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_source_rule": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
     },
     "open_redemption": {
       "params": [
         [
-          "guarantee_id",
+          "i",
           "int"
         ]
       ],
@@ -150,7 +246,7 @@
     "reclaim_expired_guarantee": {
       "params": [
         [
-          "guarantee_id",
+          "i",
           "int"
         ]
       ],
@@ -162,7 +258,7 @@
     "resolve_challenge": {
       "params": [
         [
-          "guarantee_id",
+          "i",
           "int"
         ]
       ],
@@ -174,7 +270,7 @@
     "status_label": {
       "params": [
         [
-          "guarantee_id",
+          "i",
           "int"
         ]
       ],
