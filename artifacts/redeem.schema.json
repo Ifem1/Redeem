@@ -119,7 +119,9 @@
         "provisional_code": "string",
         "provisional_amount": "int",
         "challenge_bond": "int",
-        "challenger": "address"
+        "challenger": "address",
+        "challenge_deadline": "int",
+        "evaluation_attempts": "int"
       }
     },
     "get_status": {
@@ -168,6 +170,17 @@
       "readonly": false,
       "ret": "any",
       "payable": false
+    },
+    "status_label": {
+      "params": [
+        [
+          "guarantee_id",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "string"
     }
   }
 }
