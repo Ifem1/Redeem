@@ -111,7 +111,15 @@
         "payouts": "string",
         "escrow": "int",
         "status": "int",
-        "redemption": "bool"
+        "redemption": "bool",
+        "coverage_start": "int",
+        "coverage_end": "int",
+        "evaluation_earliest_at": "int",
+        "claim_deadline": "int",
+        "provisional_code": "string",
+        "provisional_amount": "int",
+        "challenge_bond": "int",
+        "challenger": "address"
       }
     },
     "get_status": {
