@@ -1,7 +1,7 @@
 import './style.css';
 import { createClient, createAccount } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
-import { CHAIN_ID } from './protocol.js';
+import { CHAIN_ID, bond, guards, lifecycle } from './protocol.js';
 
 const app = document.querySelector('#app');
 const qs = selector => /** @type {any} */ (document.querySelector(selector));
@@ -30,7 +30,10 @@ const read = (functionName, args = []) => {
 async function write(functionName, args = [], value = 0n) {
   if (!client || !address || !wallet) throw new Error('Connect a wallet and set the verified contract address.');
   const hash = await client.writeContract({ address, functionName, args, value });
-  return client.waitForTransactionReceipt({ hash });
+  const receipt = await client.waitForTransactionReceipt({ hash });
+  const state = lifecycle(receipt);
+  if (state === 'ERROR' || state === 'UNDETERMINED') throw new Error('Execution ' + state.toLowerCase());
+  return receipt;
 }
 function issue() {
   shell(`<header class="page"><p class="eyebrow">ISSUE</p><h1>Fund a guarantee.</h1></header><section class="panel"><form id="issue-form" class="form">
