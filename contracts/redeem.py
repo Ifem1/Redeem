@@ -69,10 +69,11 @@ class Redeem(gl.Contract):
     @gl.public.write
     def evaluate_redemption(self,guarantee_id:u256):
         g=self._get(guarantee_id); assert g.status in (u8(OPEN),u8(EVALUATION_FAILED)); assert self._now()<=g.claim_deadline; g.evaluation_attempts+=u8(1)
+        source_url=g.sources.split("\n")[0]; frozen_terms=g.terms; frozen_outcomes=g.outcomes
         def review()->str:
-            page=gl.nondet.web.render(g.sources.split("\n")[0],mode="text")[:4000]
-            return gl.nondet.exec_prompt("Return JSON {outcome_code,reasoning}; choose only a frozen outcome code. Terms:"+g.terms+" Evidence:"+page)
-        result=gl.eq_principle.prompt_comparative(review,principle="outcome_code must match and be a frozen code; reasoning is non-economic")
+            page=gl.nondet.web.render(source_url,mode="text")[:4000]
+            return gl.nondet.exec_prompt("Return JSON {outcome_code,reasoning}; choose only one of these frozen outcome codes: "+frozen_outcomes+". Terms:"+frozen_terms+" Evidence:"+page)
+        result=gl.eq_principle.prompt_comparative(review,principle="outcome_code must match and be one of the frozen codes; reasoning is non-economic")
         try:
             parsed=json.loads(result); code=parsed["outcome_code"]; amount=self._payout(g,code)
         except Exception:
@@ -84,9 +85,10 @@ class Redeem(gl.Contract):
     @gl.public.write
     def resolve_challenge(self,guarantee_id:u256):
         g=self._get(guarantee_id); assert g.status==u8(CHALLENGED) and self._now()>=g.challenge_deadline
+        source_url=g.sources.split("\n")[0]; frozen_terms=g.terms; frozen_outcomes=g.outcomes
         def second()->str:
-            page=gl.nondet.web.render(g.sources.split("\n")[0],mode="text")[:4000]
-            return gl.nondet.exec_prompt("Independent second review. Return JSON with outcome_code only. Frozen:"+g.outcomes+" Terms:"+g.terms+" Evidence:"+page)
+            page=gl.nondet.web.render(source_url,mode="text")[:4000]
+            return gl.nondet.exec_prompt("Independent second review. Return JSON with outcome_code only. Frozen:"+frozen_outcomes+" Terms:"+frozen_terms+" Evidence:"+page)
         result=gl.eq_principle.prompt_comparative(second,principle="outcome_code must match and be a frozen code")
         try: code=json.loads(result)["outcome_code"]; amount=self._payout(g,code)
         except Exception: raise gl.vm.UserError("challenge resolution unavailable; retry")
