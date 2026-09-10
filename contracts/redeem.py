@@ -4,7 +4,7 @@ import datetime,json
 from genlayer import *
 ACTIVE=0; OPEN=1; RETRYABLE=2; PROVISIONAL=3; CHALLENGED=4; PAID=5; DENIED=6; EXPIRED=7; INCONCLUSIVE=8
 DECIDED="DECIDED"; SOURCE_UNAVAILABLE="SOURCE_UNAVAILABLE"; MODEL_OUTPUT_INVALID="MODEL_OUTPUT_INVALID"
-CHALLENGE_WINDOW=u256(172800); RETRY_GRACE=u256(604800); MIN_RETRY_INTERVAL=u256(3600)
+CHALLENGE_WINDOW=u256(172800); RETRY_GRACE=u256(604800); MIN_RETRY_INTERVAL=u256(3600); FINAL_RECOVERY_INTERVAL=u256(3600); MAX_REVIEW_ROUNDS=168; MANIFEST_STRIDE=u256(1000)
 @allow_storage
 @dataclass
 class Guarantee:
@@ -66,7 +66,7 @@ class Redeem(gl.Contract):
   g=self._get(i);raw=self._review(g)
   try:r=json.loads(raw);assert set(r.keys())=={"status","outcome_code","reasoning","evidence"} and r["status"] in (DECIDED,SOURCE_UNAVAILABLE,"INCONCLUSIVE") and isinstance(r["reasoning"],str) and isinstance(r["evidence"],str);code=r["outcome_code"] if r["status"]==DECIDED else "";self._bps(g,code) if code else None
   except Exception:r={"status":MODEL_OUTPUT_INVALID,"outcome_code":"","reasoning":"invalid output","evidence":""};code=""
-  round=u8(g.challenge_attempts+1) if challenge else u8(g.review_attempts+1);phase="CHALLENGE" if challenge else "PRIMARY";key=i*u256(1000)+(u256(200) if challenge else u256(100))+u256(round);self.manifests[key]=Manifest(i,phase,round,self._now(),r["status"],code,r["reasoning"][:800],r["evidence"][:1200],u8(len(json.loads(g.sources))))
+  round=u8(g.challenge_attempts+1) if challenge else u8(g.review_attempts+1);assert round<=u8(MAX_REVIEW_ROUNDS);phase="CHALLENGE" if challenge else "PRIMARY";key=i*MANIFEST_STRIDE+(u256(500) if challenge else u256(0))+u256(round);self.manifests[key]=Manifest(i,phase,round,self._now(),r["status"],code,r["reasoning"][:800],r["evidence"][:1200],u8(len(json.loads(g.sources))))
   if challenge:
    g.challenge_attempts=round;g.last_challenge_attempt_at=self._now();g.last_challenge_status=r["status"]
    if r["status"]!=DECIDED:self.guarantees[i]=g;return
@@ -93,9 +93,9 @@ class Redeem(gl.Contract):
  @gl.public.write
  def reclaim_expired_guarantee(self,i:u256):g=self._get(i);assert g.status==u8(ACTIVE) and self._now()>g.claim_deadline;self._refund_without_verdict(i,"EXPIRED_REFUNDED",u8(EXPIRED))
  @gl.public.write
- def finalize_inconclusive(self,i:u256):g=self._get(i);assert g.status==u8(RETRYABLE) and self._now()>=g.opened_at+RETRY_GRACE;self._refund_without_verdict(i,"INCONCLUSIVE_REFUNDED",u8(INCONCLUSIVE))
+ def finalize_inconclusive(self,i:u256):g=self._get(i);assert g.status==u8(RETRYABLE) and self._now()>=g.opened_at+RETRY_GRACE and self._now()>=g.last_review_attempt_at+FINAL_RECOVERY_INTERVAL;self._refund_without_verdict(i,"INCONCLUSIVE_REFUNDED",u8(INCONCLUSIVE))
  @gl.public.write
- def finalize_stalled_challenge(self,i:u256):g=self._get(i);assert g.status==u8(CHALLENGED) and self._now()>=g.challenge_opened_at+RETRY_GRACE;bond=g.challenge_bond;g.challenge_bond=u256(0);self.bonds_locked-=bond;self.bonds_returned+=bond;self.guarantees[i]=g;self._settle(i,g.provisional_code,"STALLED_CHALLENGE_FALLBACK");self._pay(g.challenger,bond)
+ def finalize_stalled_challenge(self,i:u256):g=self._get(i);assert g.status==u8(CHALLENGED) and self._now()>=g.challenge_opened_at+RETRY_GRACE and self._now()>=g.last_challenge_attempt_at+FINAL_RECOVERY_INTERVAL;bond=g.challenge_bond;g.challenge_bond=u256(0);self.bonds_locked-=bond;self.bonds_returned+=bond;self.guarantees[i]=g;self._settle(i,g.provisional_code,"STALLED_CHALLENGE_FALLBACK");self._pay(g.challenger,bond)
  @gl.public.view
  def get_guarantee(self,i:u256)->Guarantee:return self._get(i)
  @gl.public.view
@@ -103,7 +103,15 @@ class Redeem(gl.Contract):
  @gl.public.view
  def get_outcome_rule(self,i:u256,n:u8)->dict:return self._rules(self._get(i))[n]
  @gl.public.view
- def get_evidence_manifest(self,i:u256,phase:u8,r:u8)->Manifest:return self.manifests[i*u256(1000)+(u256(200) if phase==u8(1) else u256(100))+u256(r)]
+ def get_evidence_manifest(self,i:u256,phase:u8,r:u8)->Manifest:return self.manifests[i*MANIFEST_STRIDE+(u256(500) if phase==u8(1) else u256(0))+u256(r)]
+ @gl.public.view
+ def get_constants(self)->dict:return {"challenge_bond_bps":500,"challenge_window":CHALLENGE_WINDOW,"retry_grace":RETRY_GRACE,"min_retry_interval":MIN_RETRY_INTERVAL,"final_recovery_interval":FINAL_RECOVERY_INTERVAL,"max_sources":4,"max_outcomes":5,"max_page_size":25}
+ @gl.public.view
+ def list_guarantees(self,start:u256,limit:u8)->list:
+  assert 0<limit<=u8(25);out=[]
+  for i in range(start,min(self.next_id,start+u256(limit))):
+   if i in self.guarantees:out.append(self.guarantees[i])
+  return out
  @gl.public.view
  def get_guarantee_counter(self)->u256:return self.next_id-u256(1)
  @gl.public.view

@@ -112,6 +112,12 @@
       "ret": "any",
       "payable": false
     },
+    "get_constants": {
+      "params": [],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
     "get_contract_accounting": {
       "params": [],
       "kwparams": {},
@@ -237,6 +243,21 @@
       "kwparams": {},
       "readonly": true,
       "ret": "dict"
+    },
+    "list_guarantees": {
+      "params": [
+        [
+          "start",
+          "int"
+        ],
+        [
+          "limit",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "array"
     },
     "open_redemption": {
       "params": [
