@@ -2,6 +2,7 @@
 from dataclasses import dataclass
 import json
 import datetime
+import base64
 from genlayer import *
 
 ACTIVE=0; OPEN=1; PROVISIONAL=2; CHALLENGED=3; PAID=4; DENIED=5; EVALUATION_FAILED=6
@@ -79,7 +80,7 @@ class Redeem(gl.Contract):
         g.provisional_code=code; g.provisional_amount=amount; g.challenge_deadline=self._now()+CHALLENGE_GRACE; g.status=u8(PROVISIONAL); self.guarantees[guarantee_id]=g
     @gl.public.write.payable
     def challenge_redemption(self,guarantee_id:u256,reason:str):
-        g=self._get(guarantee_id); assert g.status==u8(PROVISIONAL) and self._now()<=g.challenge_deadline and (Address(gl.message.sender_address)==g.issuer or Address(gl.message.sender_address)==g.beneficiary) and gl.message.value==g.escrow*u256(500)//u256(10000) and len(reason)<=500; g.status=u8(CHALLENGED); g.challenge_bond=gl.message.value; g.challenger=Address(gl.message.sender_address); self.guarantees[guarantee_id]=g
+        sender=self._addr(gl.message.sender_address); g=self._get(guarantee_id); assert g.status==u8(PROVISIONAL) and self._now()<=g.challenge_deadline and (sender==g.issuer or sender==g.beneficiary) and gl.message.value==g.escrow*u256(500)//u256(10000) and len(reason)<=500; g.status=u8(CHALLENGED); g.challenge_bond=gl.message.value; g.challenger=sender; self.guarantees[guarantee_id]=g
     @gl.public.write
     def resolve_challenge(self,guarantee_id:u256):
         g=self._get(guarantee_id); assert g.status==u8(CHALLENGED) and self._now()>=g.challenge_deadline
@@ -115,4 +116,7 @@ class Redeem(gl.Contract):
     def _zero_address(self)->Address:
         return Address("0x0000000000000000000000000000000000000000")
     def _addr(self,value)->Address:
-        return value if isinstance(value,Address) else Address(value)
+        if isinstance(value,Address): return value
+        if isinstance(value,str) and value.startswith("addr#"): value="0x"+value[5:]
+        if isinstance(value,str) and not value.startswith("0x"): return Address(base64.b64decode(value+"===",validate=False))
+        return Address(value)
