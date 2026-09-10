@@ -80,31 +80,7 @@
       "ret": "any",
       "payable": false
     },
-    "finalize_inconclusive": {
-      "params": [
-        [
-          "guarantee_id",
-          "int"
-        ]
-      ],
-      "kwparams": {},
-      "readonly": false,
-      "ret": "any",
-      "payable": false
-    },
     "finalize_redemption": {
-      "params": [
-        [
-          "guarantee_id",
-          "int"
-        ]
-      ],
-      "kwparams": {},
-      "readonly": false,
-      "ret": "any",
-      "payable": false
-    },
-    "finalize_stalled_challenge": {
       "params": [
         [
           "guarantee_id",
@@ -125,7 +101,18 @@
       ],
       "kwparams": {},
       "readonly": true,
-      "ret": "string"
+      "ret": {
+        "issuer": "address",
+        "beneficiary": "address",
+        "title": "string",
+        "terms": "string",
+        "sources": "string",
+        "outcomes": "string",
+        "payouts": "string",
+        "escrow": "int",
+        "status": "int",
+        "redemption": "bool"
+      }
     },
     "get_status": {
       "params": [
@@ -173,17 +160,6 @@
       "readonly": false,
       "ret": "any",
       "payable": false
-    },
-    "status_label": {
-      "params": [
-        [
-          "status",
-          "int"
-        ]
-      ],
-      "kwparams": {},
-      "readonly": true,
-      "ret": "string"
     }
   }
 }
