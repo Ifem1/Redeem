@@ -67,9 +67,15 @@ class Redeem(gl.Contract):
     assert data["status"] in (DECIDED,SOURCE_UNAVAILABLE,"INCONCLUSIVE") and isinstance(data["reasoning"],str) and isinstance(data["evidence"],str)
     if data["status"]==DECIDED:assert isinstance(data["outcome_code"],str) and data["outcome_code"] in [o["code"] for o in json.loads(outcomes)]
     else:data["outcome_code"]=""
-    return json.dumps(data,sort_keys=True,separators=(",",":"))
-   except Exception:return json.dumps({"status":MODEL_OUTPUT_INVALID,"outcome_code":"","reasoning":"invalid model decision schema","evidence":""},sort_keys=True,separators=(",",":"))
-  return gl.eq_principle.prompt_comparative(f,principle="independently refetch all frozen sources; status and DECIDED outcome_code must match")
+    return data
+   except Exception:return {"status":MODEL_OUTPUT_INVALID,"outcome_code":"","reasoning":"invalid model decision schema","evidence":""}
+  def validator(leader_result):
+   try:
+    if not isinstance(leader_result,gl.vm.Return):return False
+    own=f();proposed=leader_result.calldata
+    return isinstance(proposed,dict) and own["status"]==proposed["status"] and (own["status"]!=DECIDED or own["outcome_code"]==proposed["outcome_code"])
+   except Exception:return False
+  return json.dumps(gl.vm.run_nondet_unsafe(f,validator),sort_keys=True,separators=(",",":"))
  def _apply(self,i:u256,challenge:bool):
   g=self._get(i);raw=self._review(g)
   try:
