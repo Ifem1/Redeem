@@ -1,0 +1,7 @@
+{
+  "demo": "redeem-live-cycle-b",
+  "service": "redeem-demo-service",
+  "status": "failed",
+  "result": "BREACH",
+  "statement": "The promised service condition was breached for this verification period."
+}
