@@ -64,7 +64,12 @@ class Redeem(gl.Contract):
   return gl.eq_principle.prompt_comparative(f,principle="independently refetch all frozen sources; status and DECIDED outcome_code must match")
  def _apply(self,i:u256,challenge:bool):
   g=self._get(i);raw=self._review(g)
-  try:r=json.loads(raw);assert set(r.keys())=={"status","outcome_code","reasoning","evidence"} and r["status"] in (DECIDED,SOURCE_UNAVAILABLE,"INCONCLUSIVE") and isinstance(r["reasoning"],str) and isinstance(r["evidence"],str);code=r["outcome_code"] if r["status"]==DECIDED else "";self._bps(g,code) if code else None
+  try:
+   text=raw.strip()
+   if text.startswith("```"):text=text.strip("`");text=text[4:] if text.startswith("json") else text
+   if not text.startswith("{"):text=text[text.find("{"):]
+   if not text.endswith("}"):text=text[:text.rfind("}")+1]
+   r=json.loads(text);assert set(r.keys())=={"status","outcome_code","reasoning","evidence"} and r["status"] in (DECIDED,SOURCE_UNAVAILABLE,"INCONCLUSIVE") and isinstance(r["reasoning"],str) and isinstance(r["evidence"],str);code=r["outcome_code"] if r["status"]==DECIDED else "";self._bps(g,code) if code else None
   except Exception:r={"status":MODEL_OUTPUT_INVALID,"outcome_code":"","reasoning":"invalid output","evidence":""};code=""
   round=u8(g.challenge_attempts+1) if challenge else u8(g.review_attempts+1);assert round<=u8(MAX_REVIEW_ROUNDS);phase="CHALLENGE" if challenge else "PRIMARY";key=i*MANIFEST_STRIDE+(u256(500) if challenge else u256(0))+u256(round);self.manifests[key]=Manifest(i,phase,round,self._now(),r["status"],code,r["reasoning"][:800],r["evidence"][:1200],u8(len(json.loads(g.sources))))
   if challenge:
