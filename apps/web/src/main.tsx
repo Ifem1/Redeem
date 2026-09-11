@@ -80,6 +80,12 @@ async function read(name: string, args: any[] = []) {
   if (!address) throw Error("VITE_REDEEM_CONTRACT_ADDRESS is not configured.");
   return readClient.readContract({ address, functionName: name, args });
 }
+async function fetchGuarantees() {
+  const counter = Number(await read("get_guarantee_counter"));
+  const ids = Array.from({ length: Math.max(0, counter) }, (_, i) => i + 1);
+  const records = await Promise.all(ids.map(async (id) => ({ id, ...(await read("get_guarantee", [id])) })));
+  return records;
+}
 async function write(name: string, args: any[] = [], value = 0n) {
   const hash = await client.writeContract({
     address,
@@ -354,8 +360,8 @@ function Collection({
       setRows([]);
       return;
     }
-    Promise.all([read(method, [wallet, 0, 25]), read("get_guarantee_counter")])
-      .then(async ([x, counter]: any[]) => { const source = Array.isArray(x) ? x : (x?.guarantees ?? []); const all = await Promise.all(Array.from({length: Math.min(Number(counter), 25)}, (_, i) => read("get_guarantee", [i + 1]))); const field = method.includes("beneficiary") ? "beneficiary" : "issuer"; const wanted = wallet.toLowerCase(); setRows(source.map((g: any) => { const match = all.find((candidate: any) => candidate[field]?.toLowerCase() === wanted && candidate.title === g.title && candidate.terms === g.terms); return {...g, id: match ? all.indexOf(match) + 1 : undefined, status_name: typeof g.status === "number" ? STATUSES[g.status] : g.status_name}; }).filter((g: any) => g.id !== undefined)); })
+    fetchGuarantees()
+      .then((all: any[]) => { const field = method.includes("beneficiary") ? "beneficiary" : "issuer"; const wanted = wallet.toLowerCase(); setRows(all.filter((g) => g[field]?.toLowerCase() === wanted).map((g) => ({...g, status_name: typeof g.status === "number" ? STATUSES[g.status] : g.status_name}))); })
       .catch(() => setRows(null));
   }, [wallet, method]);
   return (
@@ -397,8 +403,8 @@ function Collection({
 function Guarantees({ navigate }: { navigate: any }) {
   const [rows, setRows] = useState<any[] | null>(null);
   useEffect(() => {
-    Promise.all([read("list_guarantees", [0, 25]), read("get_guarantee_counter")])
-      .then(async ([x, counter]: any[]) => { const source = Array.isArray(x) ? x : (x?.guarantees ?? []); const all = await Promise.all(Array.from({length: Math.min(Number(counter), 25)}, (_, i) => read("get_guarantee", [i + 1]))); setRows(source.map((g: any) => { const id = all.findIndex((candidate: any) => candidate.title === g.title && candidate.terms === g.terms) + 1; return {...g, id: id || undefined, status_name: typeof g.status === "number" ? STATUSES[g.status] : g.status_name}; }).filter((g: any) => g.id !== undefined)); })
+    fetchGuarantees()
+      .then((all: any[]) => setRows(all.map((g) => ({...g, status_name: typeof g.status === "number" ? STATUSES[g.status] : g.status_name}))))
       .catch(() => setRows(null));
   }, []);
   return (
