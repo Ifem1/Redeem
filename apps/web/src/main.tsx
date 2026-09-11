@@ -396,6 +396,7 @@ function Collection({
             ? "Guarantees where this wallet is the named beneficiary."
             : "Promises this wallet has economically backed."}
         </p>
+        <Button onClick={() => navigate("/issue")}>Issue guarantee <ArrowRight size={17} /></Button>
       </section>
       {!wallet ? (
         <Card className="empty">
@@ -435,6 +436,7 @@ function Guarantees({ navigate }: { navigate: any }) {
         <div className="eyebrow">PUBLIC REGISTRY</div>
         <h1>Guarantees</h1>
         <p>Immutable promises backed by escrow.</p>
+        <Button onClick={() => navigate("/issue")}>Issue guarantee <ArrowRight size={17} /></Button>
       </section>
       {rows === null ? (
         <Card className="empty">
@@ -723,7 +725,7 @@ function Detail({ id, wallet }: { id: string; wallet: string }) {
     </>
   );
 }
-function About() {
+function About({ navigate }: { navigate: any }) {
   return (
     <>
       <section className="pagehead">
@@ -738,6 +740,7 @@ function About() {
           agreements.
         </p>
       </section>
+      <div className="hero-actions"><Button onClick={() => navigate("/issue")}>Issue guarantee <ArrowRight size={17} /></Button></div>
       <div className="steps">
         {[
           ["01", "FREEZE", "Terms and evidence rules are fixed at creation."],
@@ -789,7 +792,7 @@ function App() {
         navigate={navigate}
       />
     ) : path === "/about" ? (
-      <About />
+      <About navigate={navigate} />
     ) : path === "/activity" ? (
       <Card className="empty">
         <h3>No global activity feed</h3>
@@ -797,6 +800,7 @@ function App() {
           Redeem exposes contract state and manifests directly; it does not
           invent an indexer.
         </p>
+        <Button onClick={() => navigate("/issue")}>Issue guarantee <ArrowRight size={17} /></Button>
       </Card>
     ) : path.startsWith("/guarantees/") ? (
       <Detail id={path.split("/")[2]} wallet={wallet} />
