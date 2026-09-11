@@ -3,7 +3,7 @@ import {useEffect,useState} from 'react';
 import {createRoot} from 'react-dom/client';
 import {createClient} from 'genlayer-js';
 import {studionet} from 'genlayer-js/chains';
-import {ArrowRight,Menu,X,Wallet,Zap} from 'lucide-react';
+import {ArrowRight,Copy,Menu,X,Wallet,Zap} from 'lucide-react';
 import {CHAIN_ID,bond,guards,lifecycle} from './protocol.js';
 
 const address=import.meta.env.VITE_REDEEM_CONTRACT_ADDRESS||''; let client:any=null;
