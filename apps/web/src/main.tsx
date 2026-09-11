@@ -189,8 +189,6 @@ function Shell({
               >
                 Injected wallet
               </button>
-              <button
-                onClick={() => {
             </div>
           )}
           {menu && wallet && (
