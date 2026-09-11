@@ -71,7 +71,7 @@ class Redeem(gl.Contract):
    try:
     if not isinstance(leader_result,gl.vm.Return):return False
     own=f();proposed=leader_result.calldata
-    return isinstance(proposed,dict) and own["status"]==proposed["status"] and (own["status"]!=DECIDED or own["outcome_code"]==proposed["outcome_code"])
+    return isinstance(proposed,str) and own==proposed
    except Exception:return False
   return gl.vm.run_nondet_unsafe(f,validator)
  def _apply(self,i:u256,challenge:bool):
