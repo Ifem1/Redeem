@@ -18,11 +18,11 @@ A centralized backend or single LLM API creates a centralized judge. One operato
 
 | Area | Verified status |
 |---|---|
-| Intelligent Contract | `contracts/redeem.py`, deployed source commit `0dd6b7e` |
+| Intelligent Contract | `contracts/redeem.py`, deployed source commit `23551558807073dacebf5659f62217f6d9ee8cba` |
 | Frontend | React/Vite/TypeScript in `apps/web/` |
 | Network | GenLayer Studionet, chain ID `61999` |
-| Contract | `0x32Eb76d30f27856C2310D8f3C4d244B1fEEBBcb2` |
-| Deployment transaction | `0x969e9d3ec1e69f9110e0fcd9cc8888e1c4aea7764b8781681631868a28c9ec30` |
+| Contract | `0xAf5972b86E7491ea3D16CcBb45c2c7FE358f91d2` |
+| Deployment transaction | `0xeb85d6f5ef1d2c52a4bc519d8a1ceb8d838a8d0776f3280cfe7b6df68030cbc0` |
 | Tests | 47 pytest total; 11 use `direct_deploy`; 21 frontend Vitest tests |
 | CI | Contract, web, and hygiene jobs are configured; verify the latest run in Actions |
 
@@ -147,4 +147,4 @@ Configure `VITE_REDEEM_CONTRACT_ADDRESS` from `.env.example`; never commit secre
 
 ## Deployment
 
-The current candidate contract is deployed on GenLayer Studionet 61999 at `0x32Eb76d30f27856C2310D8f3C4d244B1fEEBBcb2`. Its deployment transaction is `0xaab4d4db73b0438c18eca838ae7f7fd95cf3f8bf9eb2ca5139bd3800ad760b7e`. The frontend uses that address through `VITE_REDEEM_CONTRACT_ADDRESS`. Live evaluation remains subject to validator consensus.
+The canonical contract is deployed on GenLayer Studionet 61999 at `0xAf5972b86E7491ea3D16CcBb45c2c7FE358f91d2`. Its deployment transaction is `0xeb85d6f5ef1d2c52a4bc519d8a1ceb8d838a8d0776f3280cfe7b6df68030cbc0`. The frontend uses that address through `VITE_REDEEM_CONTRACT_ADDRESS`.

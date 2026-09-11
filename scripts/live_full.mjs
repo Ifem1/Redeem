@@ -1,7 +1,7 @@
 import { createClient, createAccount } from "genlayer-js";
 import { CalldataAddress, ExecutionResult, TransactionStatus } from "genlayer-js/types";
 import { studionet } from "genlayer-js/chains";
-const address = "0x32Eb76d30f27856C2310D8f3C4d244B1fEEBBcb2";
+const address = "0xAf5972b86E7491ea3D16CcBb45c2c7FE358f91d2";
 const issuer = createClient({chain:studionet,account:createAccount(process.env.REDEEM_ISSUER_KEY)});
 const beneficiary = createClient({chain:studionet,account:createAccount(process.env.REDEEM_BENEFICIARY_KEY)});
 const read=createClient({chain:studionet}); const safe=(x)=>JSON.stringify(x,(_,v)=>typeof v==='bigint'?v.toString():v);

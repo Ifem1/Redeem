@@ -1,3 +1,10 @@
 # Deployment
 
-Candidate deployment: GenLayer Studionet, chain ID 61999. Contract address 0x32Eb76d30f27856C2310D8f3C4d244B1fEEBBcb2. Deployment transaction 0xaab4d4db73b0438c18eca838ae7f7fd95cf3f8bf9eb2ca5139bd3800ad760b7e. Commit 5495e81. The receipt finalized with majority agreement and successful execution. Live evaluation remains unproven because validator consensus returned Undetermined. Vercel uses VITE_REDEEM_CONTRACT_ADDRESS set to this address.
+Canonical deployment: GenLayer Studionet, chain ID 61999.
+
+- Contract: `0xAf5972b86E7491ea3D16CcBb45c2c7FE358f91d2`
+- Deployment transaction: `0xeb85d6f5ef1d2c52a4bc519d8a1ceb8d838a8d0776f3280cfe7b6df68030cbc0`
+- Deployed source commit: `23551558807073dacebf5659f62217f6d9ee8cba`
+- Frontend variable: `VITE_REDEEM_CONTRACT_ADDRESS`
+
+Do not commit wallet keys. The frontend must use the canonical address above.
