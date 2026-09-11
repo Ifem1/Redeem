@@ -1,5 +1,8 @@
 export const CHAIN_ID=61999
 export const STATUSES=['ACTIVE','REDEMPTION_OPEN','RETRYABLE','PROVISIONAL','CHALLENGED','SETTLED_PAID','SETTLED_DENIED','EXPIRED_REFUNDED','INCONCLUSIVE_REFUNDED']
+const GEN_BASE=1000000000000000000n
+export function parseGen(value){const text=String(value).trim();if(!/^\d+(\.\d{1,18})?$/.test(text))throw Error('Enter a valid GEN amount');const [whole,fraction='']=text.split('.');return BigInt(whole)*GEN_BASE+BigInt((fraction+'0'.repeat(18)).slice(0,18))}
+export function formatGen(value){const raw=BigInt(value);const whole=raw/GEN_BASE;const fraction=(raw%GEN_BASE).toString().padStart(18,'0').replace(/0+$/,'');return fraction?`${whole}.${fraction}`:String(whole)}
 export function buildPayload(v){if(!v.beneficiary||!v.title||!v.terms||v.sources.length<1||v.sources.length>4||v.outcomes.length<2||v.outcomes.length>5)throw Error('Incomplete guarantee');const escrow=BigInt(v.escrowWei);return [v.beneficiary,v.title,v.terms,BigInt(v.coverageStart),BigInt(v.coverageEnd),BigInt(v.evaluationAt),BigInt(v.claimDeadline),escrow,JSON.stringify(v.sources),JSON.stringify(v.outcomes)]}
 export function bond(total){return BigInt(total)*500n/10000n}
 export function lifecycle(receipt){if(!receipt)return 'CONSENSUS_PENDING';const result=receipt.resultName??receipt.result_name;if(result==='MAJORITY_DISAGREE'||result==='NO_MAJORITY'||result==='DISAGREE')return 'UNDETERMINED';const execution=receipt.txExecutionResultName??receipt.executionResult??receipt.consensus_data?.leader_receipt?.[0]?.execution_result;if(execution==='FINISHED_WITH_RETURN'||execution==='SUCCESS')return 'EXECUTED';if(execution==='FINISHED_WITH_ERROR'||execution==='ERROR'||result==='FAILURE')return 'ERROR';return 'FINALIZED'}
