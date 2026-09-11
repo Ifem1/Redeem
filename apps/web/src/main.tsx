@@ -50,10 +50,28 @@ function useWallet() {
         await window.ethereum.request({ method: "eth_chainId" }),
       );
       if (chain !== CHAIN_ID) {
-        setWalletError(
-          "Your wallet is connected, but this site needs GenLayer Studionet (61999). Switch networks in your wallet, then reconnect.",
-        );
-        return;
+        try {
+          await window.ethereum.request({
+            method: "wallet_switchEthereumChain",
+            params: [{ chainId: `0x${CHAIN_ID.toString(16)}` }],
+          });
+        } catch (switchError: any) {
+          if (switchError?.code === 4902) {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [{
+                chainId: `0x${CHAIN_ID.toString(16)}`,
+                chainName: "GenLayer Studionet",
+                nativeCurrency: { name: "GEN Token", symbol: "GEN", decimals: 18 },
+                rpcUrls: ["https://studio.genlayer.com/api"],
+                blockExplorerUrls: ["https://genlayer-explorer.vercel.app"],
+              }],
+            });
+          } else {
+            setWalletError("Switch to GenLayer Studionet (61999) in your wallet to continue.");
+            return;
+          }
+        }
       }
       setWallet(a[0]);
       client = createClient({
