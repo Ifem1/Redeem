@@ -21,7 +21,7 @@ A centralized backend or single LLM API creates a centralized judge. One operato
 | Intelligent Contract | `contracts/redeem.py`, deployed source commit `0dd6b7e` |
 | Frontend | React/Vite/TypeScript in `apps/web/` |
 | Network | GenLayer Studionet, chain ID `61999` |
-| Contract | `0xa9f8A0f5267766fe3ec90443fc44256e78068d77` |
+| Contract | `0x32Eb76d30f27856C2310D8f3C4d244B1fEEBBcb2` |
 | Deployment transaction | `0x969e9d3ec1e69f9110e0fcd9cc8888e1c4aea7764b8781681631868a28c9ec30` |
 | Tests | 47 pytest total; 11 use `direct_deploy`; 21 frontend Vitest tests |
 | CI | Contract, web, and hygiene jobs are configured; verify the latest run in Actions |
@@ -147,4 +147,4 @@ Configure `VITE_REDEEM_CONTRACT_ADDRESS` from `.env.example`; never commit secre
 
 ## Deployment
 
-The current contract is deployed on GenLayer Studionet 61999 at `0xa9f8A0f5267766fe3ec90443fc44256e78068d77`. Its deployment transaction is `0x969e9d3ec1e69f9110e0fcd9cc8888e1c4aea7764b8781681631868a28c9ec30`. The frontend uses that address through `VITE_REDEEM_CONTRACT_ADDRESS`. Vercel’s current URL should be taken from the project dashboard because it has not been independently verified here.
+The current candidate contract is deployed on GenLayer Studionet 61999 at `0x32Eb76d30f27856C2310D8f3C4d244B1fEEBBcb2`. Its deployment transaction is `0xaab4d4db73b0438c18eca838ae7f7fd95cf3f8bf9eb2ca5139bd3800ad760b7e`. The frontend uses that address through `VITE_REDEEM_CONTRACT_ADDRESS`. Live evaluation remains subject to validator consensus.
