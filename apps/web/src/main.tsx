@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
+import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
 import { ArrowRight, Copy, Menu, X, Wallet, Zap } from "lucide-react";
 import { CHAIN_ID, STATUSES, bond, formatGen, guards, parseGen } from "./protocol.js";
 
@@ -93,9 +94,12 @@ async function write(name: string, args: any[] = [], value = 0n) {
     args,
     value,
   });
-  const receipt = await client.waitForTransactionReceipt({ hash });
-  if (receipt.resultName === "MAJORITY_DISAGREE" || receipt.resultName === "NO_MAJORITY") throw Error("Consensus is undetermined.");
-  if (receipt.txExecutionResultName !== "FINISHED_WITH_RETURN") throw Error("Contract execution failed.");
+  const receipt = await client.waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED, fullTransaction: true });
+  if (receipt.resultName === "MAJORITY_DISAGREE" || receipt.resultName === "NO_MAJORITY" || receipt.resultName === "DISAGREE") throw Error("Consensus is undetermined.");
+  if (receipt.txExecutionResultName !== ExecutionResult.FINISHED_WITH_RETURN) {
+    if (receipt.txExecutionResultName === ExecutionResult.NOT_VOTED) throw Error("Transaction execution is still pending.");
+    throw Error("Contract execution failed.");
+  }
   return receipt;
 }
 function Shell({
