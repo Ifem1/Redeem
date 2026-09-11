@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
 import { ArrowRight, Copy, Menu, X, Wallet, Zap } from "lucide-react";
-import { CHAIN_ID, bond, formatGen, guards, lifecycle, parseGen } from "./protocol.js";
+import { CHAIN_ID, STATUSES, bond, formatGen, guards, parseGen } from "./protocol.js";
 
 const address = import.meta.env.VITE_REDEEM_CONTRACT_ADDRESS || "";
 let client: any = null;
@@ -60,6 +60,7 @@ function useWallet() {
         provider: window.ethereum,
         account: a[0],
       });
+      await client.connect("studionet");
     } catch (e: any) {
       setWalletError(e.message || "Wallet connection failed.");
     }
@@ -87,13 +88,8 @@ async function write(name: string, args: any[] = [], value = 0n) {
     value,
   });
   const receipt = await client.waitForTransactionReceipt({ hash });
-  const state = lifecycle(receipt);
-  if (state !== "EXECUTED")
-    throw Error(
-      state === "UNDETERMINED"
-        ? "Consensus is undetermined."
-        : "Contract execution failed.",
-    );
+  if (receipt.resultName === "MAJORITY_DISAGREE" || receipt.resultName === "NO_MAJORITY") throw Error("Consensus is undetermined.");
+  if (receipt.txExecutionResultName !== "FINISHED_WITH_RETURN") throw Error("Contract execution failed.");
   return receipt;
 }
 function Shell({
@@ -295,10 +291,10 @@ function Home({ navigate, wallet }: { navigate: any; wallet: string }) {
       </div>
       <div className="stats">
         {[
-          ["TOTAL FUNDED", stats?.total_funded],
-          ["REMAINING ESCROW", stats?.total_remaining],
-          ["BENEFICIARY PAID", stats?.total_paid],
-          ["ISSUER REFUNDS", stats?.total_refunded],
+          ["TOTAL FUNDED", stats?.funded],
+          ["REMAINING ESCROW", stats?.remaining],
+          ["BENEFICIARY PAID", stats?.paid],
+          ["ISSUER REFUNDS", stats?.refunded],
         ].map(([l, v]) => (
           <Card key={l}>
             <div className="eyebrow">{l}</div>
@@ -314,8 +310,8 @@ function Home({ navigate, wallet }: { navigate: any; wallet: string }) {
   );
 }
 function GuaranteeCard({ g, navigate }: { g: any; navigate: any }) {
-  const id = g.id ?? g.guarantee_id ?? g[0];
-  const status = g.status_name ?? g.status ?? "UNKNOWN";
+  const id = g.id;
+  const status = typeof g.status === "number" ? (STATUSES[g.status] ?? "UNKNOWN") : (g.status_name ?? "UNKNOWN");
   return (
     <Card className="guarantee">
       <div className="row">
@@ -358,8 +354,8 @@ function Collection({
       setRows([]);
       return;
     }
-    read(method, [wallet, 0, 25])
-      .then((x: any) => setRows(Array.isArray(x) ? x : (x?.guarantees ?? [])))
+    Promise.all([read(method, [wallet, 0, 25]), read("get_guarantee_counter")])
+      .then(async ([x, counter]: any[]) => { const source = Array.isArray(x) ? x : (x?.guarantees ?? []); const all = await Promise.all(Array.from({length: Math.min(Number(counter), 25)}, (_, i) => read("get_guarantee", [i + 1]))); const field = method.includes("beneficiary") ? "beneficiary" : "issuer"; const wanted = wallet.toLowerCase(); setRows(source.map((g: any) => { const match = all.find((candidate: any) => candidate[field]?.toLowerCase() === wanted && candidate.title === g.title && candidate.terms === g.terms); return {...g, id: match ? all.indexOf(match) + 1 : undefined, status_name: typeof g.status === "number" ? STATUSES[g.status] : g.status_name}; }).filter((g: any) => g.id !== undefined)); })
       .catch(() => setRows(null));
   }, [wallet, method]);
   return (
@@ -401,8 +397,8 @@ function Collection({
 function Guarantees({ navigate }: { navigate: any }) {
   const [rows, setRows] = useState<any[] | null>(null);
   useEffect(() => {
-    read("list_guarantees", [0, 25])
-      .then((x: any) => setRows(Array.isArray(x) ? x : (x?.guarantees ?? [])))
+    Promise.all([read("list_guarantees", [0, 25]), read("get_guarantee_counter")])
+      .then(async ([x, counter]: any[]) => { const source = Array.isArray(x) ? x : (x?.guarantees ?? []); const all = await Promise.all(Array.from({length: Math.min(Number(counter), 25)}, (_, i) => read("get_guarantee", [i + 1]))); setRows(source.map((g: any) => { const id = all.findIndex((candidate: any) => candidate.title === g.title && candidate.terms === g.terms) + 1; return {...g, id: id || undefined, status_name: typeof g.status === "number" ? STATUSES[g.status] : g.status_name}; }).filter((g: any) => g.id !== undefined)); })
       .catch(() => setRows(null));
   }, []);
   return (
@@ -644,7 +640,7 @@ function Detail({ id, wallet }: { id: string; wallet: string }) {
             <h1>{g.title ?? "Guarantee detail"}</h1>
           </div>
           <span className="badge">
-            {g.status_name ?? g.status ?? "UNKNOWN"}
+            {typeof g.status === "number" ? (STATUSES[g.status] ?? "UNKNOWN") : (g.status_name ?? "UNKNOWN")}
           </span>
         </div>
       </section>
