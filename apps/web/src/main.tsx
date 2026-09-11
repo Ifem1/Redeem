@@ -303,7 +303,7 @@ function Home({ navigate, wallet }: { navigate: any; wallet: string }) {
           <Card key={l}>
             <div className="eyebrow">{l}</div>
             <strong>
-              {stats === false ? "Unavailable" : v == null ? "—" : String(v)}{" "}
+              {stats === false ? "Unavailable" : v == null ? "—" : `${formatGen(v)} GEN`}{" "}
               <small>GEN</small>
             </strong>
             <p>From deployed contract accounting</p>
