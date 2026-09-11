@@ -1,4 +1,3 @@
 # Testing
 
-Direct tests prove authorization, time bounds, exact funding, outcome validation, accounting, terminal-state protection, retry behavior, and challenge-bond conservation. Integration tests must be run against a real GenLayer environment for web/LLM behavior; such tests are not substitutes for deterministic direct tests.
-Direct Mode currently contains 47 passing tests. The suite deploys the Redeem contract with gltest's direct_deploy fixture and invokes public methods for funding, validation, bounded reads, rule reads, constants, expiry, and rejection paths. CI uses the pinned versions in requirements.txt and runs lint, validation, schema drift, typecheck, and pytest.
+There are 47 Direct Mode tests. They deploy Redeem with direct_deploy and invoke public methods for funding, validation, authorization, bounded reads, rule reads, constants, expiry, accounting, and terminal protection. Nondeterministic review is isolated from deterministic assertions. CI uses pinned genlayer-test 0.29.2, genvm-linter 0.11.0, and pytest 9.1.1, followed by web lint, typecheck, Vitest, and build.
