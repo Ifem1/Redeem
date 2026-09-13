@@ -163,6 +163,7 @@ function Shell({
       </div>
       <nav>
         <button className="brand" onClick={() => navigate("/")}>
+          <img src="/redeem-mark.png" alt="" aria-hidden="true" />
           REDEEM<span>·</span>
         </button>
         <button
