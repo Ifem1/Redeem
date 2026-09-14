@@ -6,6 +6,7 @@ import { studionet } from "genlayer-js/chains";
 import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
 import { ArrowRight, Copy, Menu, X, Wallet, Zap } from "lucide-react";
 import { CHAIN_ID, STATUSES, bond, formatGen, guards, parseGen } from "./protocol.js";
+import { connectInjectedWallet } from "./wallet";
 
 const address = import.meta.env.VITE_REDEEM_CONTRACT_ADDRESS || "";
 let client: any = null;
@@ -43,43 +44,16 @@ function useWallet() {
       return;
     }
     try {
-      const a = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-      const chain = Number(
-        await window.ethereum.request({ method: "eth_chainId" }),
+      const connected = await connectInjectedWallet(
+        window.ethereum,
+        (provider, account) => createClient({
+          chain: studionet,
+          provider,
+          account: account as `0x${string}`,
+        }),
       );
-      if (chain !== CHAIN_ID) {
-        try {
-          await window.ethereum.request({
-            method: "wallet_switchEthereumChain",
-            params: [{ chainId: `0x${CHAIN_ID.toString(16)}` }],
-          });
-        } catch (switchError: any) {
-          if (switchError?.code === 4902) {
-            await window.ethereum.request({
-              method: "wallet_addEthereumChain",
-              params: [{
-                chainId: `0x${CHAIN_ID.toString(16)}`,
-                chainName: "GenLayer Studionet",
-                nativeCurrency: { name: "GEN Token", symbol: "GEN", decimals: 18 },
-                rpcUrls: ["https://studio.genlayer.com/api"],
-                blockExplorerUrls: ["https://genlayer-explorer.vercel.app"],
-              }],
-            });
-          } else {
-            setWalletError("Switch to GenLayer Studionet (61999) in your wallet to continue.");
-            return;
-          }
-        }
-      }
-      setWallet(a[0]);
-      client = createClient({
-        chain: studionet,
-        provider: window.ethereum,
-        account: a[0],
-      });
-      await client.connect("studionet");
+      client = connected.client;
+      setWallet(connected.account);
     } catch (e: any) {
       setWalletError(e.message || "Wallet connection failed.");
     }
