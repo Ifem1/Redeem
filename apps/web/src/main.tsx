@@ -506,9 +506,12 @@ function Issue() {
         beneficiary.slice(2).match(/.{1,2}/g)!.map((byte) => Number.parseInt(byte, 16)),
       );
       const calldataBeneficiary = new CalldataAddress(beneficiaryBytes);
-      const ts = (name: string, fallback: number) => {
+      const ts = (name: string, fallback: bigint) => {
         const v = String(f.get(name) || "");
-        return v ? Math.floor(new Date(v).getTime() / 1000) : fallback;
+        if (!v) return fallback;
+        const milliseconds = new Date(v).getTime();
+        if (!Number.isFinite(milliseconds)) throw Error(`Enter a valid ${name} date.`);
+        return BigInt(Math.floor(milliseconds / 1000));
       };
       const source = {
         label: String(f.get("sourceLabel")),
@@ -534,20 +537,24 @@ function Issue() {
         outcomes[1].payout_bps <= 0
       )
         throw Error("Add a valid HTTPS source and nonzero payout outcome.");
-      const end = ts("coverageEnd", 4102444800);
+      const title = String(f.get("title") || "").trim();
+      const terms = String(f.get("terms") || "").trim();
+      const sourceRules = JSON.stringify([source]);
+      const outcomeRules = JSON.stringify(outcomes);
+      const end = ts("coverageEnd", 4102444800n);
       await write(
         "create_guarantee",
         [
           calldataBeneficiary,
-          String(f.get("title") || "").trim(),
-          String(f.get("terms") || "").trim(),
-          ts("coverageStart", 0),
+          title,
+          terms,
+          ts("coverageStart", 0n),
           end,
-          ts("evaluationAt", 0),
+          ts("evaluationAt", 0n),
           ts("claimDeadline", end),
           escrow,
-          JSON.stringify([source]),
-          JSON.stringify(outcomes),
+          sourceRules,
+          outcomeRules,
         ],
         escrow,
       );
