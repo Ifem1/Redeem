@@ -768,7 +768,10 @@ function Detail({ id, wallet }: { id: string; wallet: string }) {
               <div className="action" key={name}>
                 <span>{name.replaceAll("_", " ")}</span>
                 <button
+                  type="button"
+                  className={enabled ? "action-button enabled" : "action-button"}
                   disabled={!enabled || !!busy}
+                  title={enabled ? `Run ${name.replaceAll("_", " ")}` : "This action is unavailable for the current contract state or connected wallet."}
                   onClick={() => act(name, key, value)}
                 >
                   {busy === name
@@ -781,8 +784,7 @@ function Detail({ id, wallet }: { id: string; wallet: string }) {
             );
           })}
           <p className="muted">
-            Actions remain disabled unless the loaded contract state and wallet
-            permit them.
+            Green buttons are available for the current contract state and connected wallet. Disabled actions are guarded by the protocol.
           </p>
         </Card>
       </div>
