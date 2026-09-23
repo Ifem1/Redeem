@@ -1,5 +1,5 @@
 import "./style.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
@@ -7,6 +7,7 @@ import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
 import { ArrowRight, Copy, Menu, X, Wallet, Zap } from "lucide-react";
 import { CHAIN_ID, STATUSES, bond, formatGen, guards, parseGen } from "./protocol.js";
 import { connectInjectedWallet } from "./wallet";
+import { makeDemoIssueValues } from "./demo";
 
 const address = import.meta.env.VITE_REDEEM_CONTRACT_ADDRESS || "";
 let client: any = null;
@@ -229,15 +230,18 @@ function Button({
   onClick,
   disabled = false,
   secondary = false,
+  type = "button",
 }: {
   children: any;
   onClick?: () => void;
   disabled?: boolean;
   secondary?: boolean;
+  type?: "button" | "submit" | "reset";
 }) {
   return (
     <button
       className={secondary ? "btn secondary" : "btn"}
+      type={type}
       disabled={disabled}
       onClick={onClick}
     >
@@ -433,8 +437,29 @@ function Guarantees({ navigate }: { navigate: any }) {
 }
 function Issue() {
   const [status, setStatus] = useState("");
+  const [demoMode, setDemoMode] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const loadDemo = () => {
+    const values = makeDemoIssueValues();
+    Object.entries(values).forEach(([name, value]) => {
+      const field = formRef.current?.elements.namedItem(name) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | null;
+      if (field) field.value = value;
+    });
+    const required = formRef.current?.elements.namedItem("required") as HTMLInputElement | null;
+    if (required) required.checked = true;
+    setDemoMode(true);
+    setStatus("Demo data loaded. Preview only — no transaction will be submitted.");
+  };
+  const useLiveForm = () => {
+    setDemoMode(false);
+    setStatus("Live mode enabled. Review the fields, then fund through your connected wallet.");
+  };
   const submit = async (e: any) => {
     e.preventDefault();
+    if (demoMode) {
+      setStatus("Demo preview only — turn off demo mode before funding a real guarantee.");
+      return;
+    }
     const f = new FormData(e.currentTarget);
     try {
       setStatus("Awaiting wallet approval…");
@@ -496,8 +521,23 @@ function Issue() {
         <h1>Fund a promise.</h1>
         <p>These terms become immutable once funded.</p>
       </section>
+      <Card className={demoMode ? "demo-card active" : "demo-card"}>
+        <div className="row">
+          <div>
+            <div className="eyebrow">FRONTEND TESTING</div>
+            <h3>Use demo data</h3>
+            <p className="muted">Loads clearly marked sample values into this form. Demo mode never calls the contract or creates a wallet transaction.</p>
+          </div>
+          {demoMode ? (
+            <Button type="button" onClick={useLiveForm} secondary>USE LIVE FORM</Button>
+          ) : (
+            <Button type="button" onClick={loadDemo} secondary>USE DEMO DATA</Button>
+          )}
+        </div>
+        {demoMode && <p className="status">DEMO MODE — preview only. Disable demo mode to submit real contract data.</p>}
+      </Card>
       <Card>
-        <form onSubmit={submit} className="form">
+        <form ref={formRef} onSubmit={submit} className="form">
           <label>
             Beneficiary address
             <input name="beneficiary" placeholder="0x…" required />
@@ -583,8 +623,8 @@ function Issue() {
               />
             </div>
           </div>
-          <Button>
-            FUND GUARANTEE <Zap size={16} />
+          <Button type="submit" disabled={demoMode}>
+            {demoMode ? "DEMO PREVIEW ONLY" : "FUND GUARANTEE"} <Zap size={16} />
           </Button>
           {status && <p className="status">{status}</p>}
         </form>
