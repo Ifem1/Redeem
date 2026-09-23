@@ -4,6 +4,7 @@ import { createRoot } from "react-dom/client";
 import { createClient } from "genlayer-js";
 import { studionet } from "genlayer-js/chains";
 import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
+import { getAddress } from "viem";
 import { ArrowRight, Copy, Menu, X, Wallet, Zap } from "lucide-react";
 import { CHAIN_ID, STATUSES, bond, formatGen, guards, parseGen } from "./protocol.js";
 import { connectInjectedWallet, restoreInjectedWallet } from "./wallet";
@@ -492,7 +493,14 @@ function Issue() {
     const f = new FormData(e.currentTarget);
     try {
       setStatus("Awaiting wallet approval…");
-      const escrow = parseGen(String(f.get("escrow")));
+      const beneficiaryInput = String(f.get("beneficiary") || "").trim();
+      let beneficiary: `0x${string}`;
+      try {
+        beneficiary = getAddress(beneficiaryInput) as `0x${string}`;
+      } catch {
+        throw Error("Enter a valid 20-byte beneficiary wallet address.");
+      }
+      const escrow = parseGen(String(f.get("escrow") || "").trim());
       const ts = (name: string, fallback: number) => {
         const v = String(f.get(name) || "");
         return v ? Math.floor(new Date(v).getTime() / 1000) : fallback;
@@ -525,9 +533,9 @@ function Issue() {
       await write(
         "create_guarantee",
         [
-          f.get("beneficiary"),
-          f.get("title"),
-          f.get("terms"),
+          beneficiary,
+          String(f.get("title") || "").trim(),
+          String(f.get("terms") || "").trim(),
           ts("coverageStart", 0),
           end,
           ts("evaluationAt", 0),
