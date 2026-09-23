@@ -10,7 +10,7 @@ export function makeDemoIssueValues(now = Date.now()): DemoIssueValues {
   return {
     beneficiary: "0x000000000000000000000000000000000000dEaD",
     title: "Demo guarantee — preview only",
-    terms: "Preview terms for testing the issuance interface. This data is never submitted while demo mode is enabled.",
+    terms: "Sample terms for testing the issuance interface. Review these terms before choosing whether to fund.",
     escrow: "0.02",
     coverageStart: local(1),
     coverageEnd: local(49),

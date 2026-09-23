@@ -10,6 +10,6 @@ describe("demo issue data", () => {
     expect(values.paidCode).toBe("BREACH");
     expect(Number(values.paidBps)).toBe(10000);
     expect(new Date(values.coverageEnd).getTime()).toBeGreaterThan(new Date(values.coverageStart).getTime());
-    expect(values.terms).toContain("never submitted");
+    expect(values.terms).toContain("Review these terms");
   });
 });

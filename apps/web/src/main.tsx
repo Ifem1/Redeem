@@ -481,7 +481,7 @@ function Issue() {
     const required = formRef.current?.elements.namedItem("required") as HTMLInputElement | null;
     if (required) required.checked = true;
     setDemoMode(true);
-    setStatus("Demo data loaded. Preview only — no transaction will be submitted.");
+    setStatus("Demo values loaded. Review them, then choose whether to fund this real guarantee.");
   };
   const useLiveForm = () => {
     setDemoMode(false);
@@ -489,10 +489,6 @@ function Issue() {
   };
   const submit = async (e: any) => {
     e.preventDefault();
-    if (demoMode) {
-      setStatus("Demo preview only — turn off demo mode before funding a real guarantee.");
-      return;
-    }
     const f = new FormData(e.currentTarget);
     try {
       setStatus("Awaiting wallet approval…");
@@ -559,7 +555,7 @@ function Issue() {
           <div>
             <div className="eyebrow">FRONTEND TESTING</div>
             <h3>Use demo data</h3>
-            <p className="muted">Loads clearly marked sample values into this form. Demo mode never calls the contract or creates a wallet transaction.</p>
+            <p className="muted">Loads sample values into the form. Nothing is submitted automatically. Review or edit the values, then choose whether to fund the guarantee.</p>
           </div>
           {demoMode ? (
             <Button type="button" onClick={useLiveForm} secondary>USE LIVE FORM</Button>
@@ -567,7 +563,7 @@ function Issue() {
             <Button type="button" onClick={loadDemo} secondary>USE DEMO DATA</Button>
           )}
         </div>
-        {demoMode && <p className="status">DEMO MODE — preview only. Disable demo mode to submit real contract data.</p>}
+        {demoMode && <p className="status">DEMO VALUES LOADED — funding is still a real wallet transaction and requires your explicit click and approval.</p>}
       </Card>
       <Card>
         <form ref={formRef} onSubmit={submit} className="form">
@@ -656,8 +652,8 @@ function Issue() {
               />
             </div>
           </div>
-          <Button type="submit" disabled={demoMode}>
-            {demoMode ? "DEMO PREVIEW ONLY" : "FUND GUARANTEE"} <Zap size={16} />
+          <Button type="submit">
+            FUND GUARANTEE <Zap size={16} />
           </Button>
           {status && <p className="status">{status}</p>}
         </form>
