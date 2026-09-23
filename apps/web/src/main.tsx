@@ -22,6 +22,14 @@ const nav = [
   ["/about", "About"],
 ];
 const short = (v: string) => (v ? `${v.slice(0, 6)}…${v.slice(-4)}` : "—");
+function addressKey(value: unknown): string {
+  if (typeof value === "string") return value.toLowerCase();
+  const bytes = value && typeof value === "object" && "bytes" in value ? (value as any).bytes : value;
+  if (bytes instanceof Uint8Array) {
+    return `0x${Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("")}`;
+  }
+  return "";
+}
 function useRoute() {
   const [path, setPath] = useState(location.pathname);
   useEffect(() => {
@@ -397,7 +405,7 @@ function Collection({
       return;
     }
     fetchGuarantees()
-      .then((all: any[]) => { const field = method.includes("beneficiary") ? "beneficiary" : "issuer"; const wanted = wallet.toLowerCase(); setRows(all.filter((g) => g[field]?.toLowerCase() === wanted).map((g) => ({...g, status_name: typeof g.status === "number" ? STATUSES[g.status] : g.status_name}))); })
+      .then((all: any[]) => { const field = method.includes("beneficiary") ? "beneficiary" : "issuer"; const wanted = addressKey(wallet); setRows(all.filter((g) => addressKey(g[field]) === wanted).map((g) => ({...g, status_name: typeof g.status === "number" ? STATUSES[g.status] : g.status_name}))); })
       .catch(() => setRows(null));
   }, [wallet, method]);
   return (
