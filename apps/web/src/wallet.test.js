@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { connectInjectedWallet } from "./wallet.ts";
+import { connectInjectedWallet, restoreInjectedWallet } from "./wallet.ts";
 
 const ACCOUNT = "0x1234567890123456789012345678901234567890";
 
@@ -18,6 +18,28 @@ function makeProvider(responses) {
 }
 
 describe("injected EIP-1193 connection", () => {
+  it("restores an approved account after refresh without requesting approval again", async () => {
+    const provider = makeProvider({
+      eth_accounts: [ACCOUNT],
+      eth_chainId: "0xf22f",
+    });
+    const factory = vi.fn((_provider, account) => ({ account }));
+
+    const result = await restoreInjectedWallet(provider, factory);
+
+    expect(result?.account).toBe(ACCOUNT);
+    expect(provider.calls.map(({ method }) => method)).toEqual([
+      "eth_accounts",
+      "eth_chainId",
+    ]);
+    expect(provider.calls.map(({ method }) => method)).not.toContain("eth_requestAccounts");
+  });
+
+  it("returns no session when the provider has no approved accounts", async () => {
+    const provider = makeProvider({ eth_accounts: [] });
+    await expect(restoreInjectedWallet(provider, vi.fn())).resolves.toBeNull();
+  });
+
   it("connects a current Studionet account using standard provider requests", async () => {
     const provider = makeProvider({
       eth_requestAccounts: [ACCOUNT],

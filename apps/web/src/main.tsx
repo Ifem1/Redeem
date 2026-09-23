@@ -6,7 +6,7 @@ import { studionet } from "genlayer-js/chains";
 import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
 import { ArrowRight, Copy, Menu, X, Wallet, Zap } from "lucide-react";
 import { CHAIN_ID, STATUSES, bond, formatGen, guards, parseGen } from "./protocol.js";
-import { connectInjectedWallet } from "./wallet";
+import { connectInjectedWallet, restoreInjectedWallet } from "./wallet";
 import { makeDemoIssueValues } from "./demo";
 
 const address = import.meta.env.VITE_REDEEM_CONTRACT_ADDRESS || "";
@@ -38,6 +38,43 @@ function useRoute() {
 function useWallet() {
   const [wallet, setWallet] = useState("");
   const [walletError, setWalletError] = useState("");
+  const walletClient = (provider: any, account: string) => createClient({
+    chain: studionet,
+    provider,
+    account: account as `0x${string}`,
+  });
+  const restore = async () => {
+    if (!window.ethereum) return;
+    try {
+      const connected = await restoreInjectedWallet(window.ethereum, walletClient);
+      if (connected) {
+        client = connected.client;
+        setWallet(connected.account);
+      }
+    } catch (e: any) {
+      setWalletError(e.message || "Wallet session could not be restored.");
+    }
+  };
+  useEffect(() => {
+    void restore();
+    const provider = window.ethereum as any;
+    if (!provider?.on) return;
+    const accountsChanged = (accounts: unknown) => {
+      if (!Array.isArray(accounts) || !accounts[0]) {
+        setWallet("");
+        client = null;
+      } else {
+        void restore();
+      }
+    };
+    const chainChanged = () => void restore();
+    provider.on("accountsChanged", accountsChanged);
+    provider.on("chainChanged", chainChanged);
+    return () => {
+      provider.removeListener?.("accountsChanged", accountsChanged);
+      provider.removeListener?.("chainChanged", chainChanged);
+    };
+  }, []);
   const connect = async () => {
     setWalletError("");
     if (!window.ethereum) {
@@ -47,11 +84,7 @@ function useWallet() {
     try {
       const connected = await connectInjectedWallet(
         window.ethereum,
-        (provider, account) => createClient({
-          chain: studionet,
-          provider,
-          account: account as `0x${string}`,
-        }),
+        walletClient,
       );
       client = connected.client;
       setWallet(connected.account);

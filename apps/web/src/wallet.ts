@@ -26,7 +26,28 @@ export async function connectInjectedWallet<T>(
   provider: InjectedProvider,
   createWalletClient: WalletClientFactory<T>,
 ): Promise<{ account: string; client: T }> {
-  const accounts = await provider.request({ method: "eth_requestAccounts" });
+  return connectWithAccounts(provider, createWalletClient, "eth_requestAccounts");
+}
+
+export async function restoreInjectedWallet<T>(
+  provider: InjectedProvider,
+  createWalletClient: WalletClientFactory<T>,
+): Promise<{ account: string; client: T } | null> {
+  const accounts = await provider.request({ method: "eth_accounts" });
+  if (!Array.isArray(accounts) || typeof accounts[0] !== "string" || !accounts[0]) {
+    return null;
+  }
+  return connectWithAccounts(provider, createWalletClient, accounts);
+}
+
+async function connectWithAccounts<T>(
+  provider: InjectedProvider,
+  createWalletClient: WalletClientFactory<T>,
+  requestMethod: "eth_requestAccounts" | string[] = "eth_requestAccounts",
+): Promise<{ account: string; client: T }> {
+  const accounts = Array.isArray(requestMethod)
+    ? requestMethod
+    : await provider.request({ method: requestMethod });
   if (!Array.isArray(accounts) || typeof accounts[0] !== "string" || !accounts[0]) {
     throw new Error("The wallet did not return an account.");
   }
