@@ -695,11 +695,22 @@ function Detail({ id, wallet }: { id: string; wallet: string }) {
       .then(setG)
       .catch((e) => setError(e.message));
   }, [id]);
+  const refreshGuarantee = async () => {
+    let latest = await read("get_guarantee", [Number(id)]);
+    setG(latest);
+    // GenLayer's finalized write and public read can become visible on
+    // adjacent blocks. Poll briefly so the UI reflects the accepted action.
+    for (let attempt = 0; attempt < 4; attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 750));
+      latest = await read("get_guarantee", [Number(id)]);
+      setG(latest);
+    }
+  };
   const act = async (name: string, key: string, value = 0n) => {
     try {
       setBusy(name);
       await write(name, [Number(id)], value);
-      setG(await read("get_guarantee", [Number(id)]));
+      await refreshGuarantee();
     } catch (e: any) {
       setError(e.message);
     } finally {
