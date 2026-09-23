@@ -2,6 +2,7 @@ import "./style.css";
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import { createClient } from "genlayer-js";
+import { CalldataAddress } from "genlayer-js/types";
 import { studionet } from "genlayer-js/chains";
 import { ExecutionResult, TransactionStatus } from "genlayer-js/types";
 import { getAddress } from "viem";
@@ -501,6 +502,10 @@ function Issue() {
         throw Error("Enter a valid 20-byte beneficiary wallet address.");
       }
       const escrow = parseGen(String(f.get("escrow") || "").trim());
+      const beneficiaryBytes = new Uint8Array(
+        beneficiary.slice(2).match(/.{1,2}/g)!.map((byte) => Number.parseInt(byte, 16)),
+      );
+      const calldataBeneficiary = new CalldataAddress(beneficiaryBytes);
       const ts = (name: string, fallback: number) => {
         const v = String(f.get(name) || "");
         return v ? Math.floor(new Date(v).getTime() / 1000) : fallback;
@@ -533,7 +538,7 @@ function Issue() {
       await write(
         "create_guarantee",
         [
-          beneficiary,
+          calldataBeneficiary,
           String(f.get("title") || "").trim(),
           String(f.get("terms") || "").trim(),
           ts("coverageStart", 0),
