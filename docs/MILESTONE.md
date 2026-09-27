@@ -6,7 +6,7 @@ Accepted baseline commit: `23551558807073dacebf5659f62217f6d9ee8cba` (the last a
 
 ## Milestone head
 
-Final milestone SHA: `FILL AFTER COMMIT AND PUSH`.
+Final milestone SHA: `192044e3dc340896d1a2cb21098643b3c6273a36`.
 
 ## Before
 
@@ -46,4 +46,4 @@ The live three-epoch demonstration remains outstanding. Review and challenge out
 
 ## Compare URL
 
-[https://github.com/Ifem1/Redeem/compare/](https://github.com/Ifem1/Redeem/compare/)`23551558807073dacebf5659f62217f6d9ee8cba`...`FILL_AFTER_PUSH`
+[https://github.com/Ifem1/Redeem/compare/](https://github.com/Ifem1/Redeem/compare/)`23551558807073dacebf5659f62217f6d9ee8cba`...`192044e3dc340896d1a2cb21098643b3c6273a36`
