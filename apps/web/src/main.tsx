@@ -7,7 +7,7 @@ import { studionet } from "genlayer-js/chains";
 import { TransactionStatus } from "genlayer-js/types";
 import { getAddress } from "viem";
 import { ArrowRight, Copy, Menu, X, Wallet, Zap } from "lucide-react";
-import { CHAIN_ID, STATUSES, bond, formatGen, guards, parseGen } from "./protocol.js";
+import { CHAIN_ID, STATUSES, bond, buildRecurringPayload, formatGen, guards, parseGen } from "./protocol.js";
 import { connectInjectedWallet, restoreInjectedWallet } from "./wallet";
 import { makeDemoIssueValues } from "./demo";
 
@@ -16,6 +16,7 @@ let client: any = null;
 const readClient: any = createClient({ chain: studionet });
 const nav = [
   ["/guarantees", "Guarantees"],
+  ["/recurring", "Recurring"],
   ["/my-rights", "My Rights"],
   ["/my-issued", "My Issued"],
   ["/activity", "Activity"],
@@ -122,6 +123,9 @@ async function fetchGuarantees() {
   const ids = Array.from({ length: Math.max(0, counter) }, (_, i) => i + 1);
   const records = await Promise.all(ids.map(async (id) => ({ id, ...(await read("get_guarantee", [id])) })));
   return records;
+}
+async function fetchRecurring(start=0) {
+  const counter=Number(await read("get_recurring_counter"));const records=await read("list_recurring",[start,25]);return {counter,rows:records.map((row:any,index:number)=>({id:start+index+1,...row})).filter((row:any)=>row.id<=counter)}
 }
 async function write(name: string, args: any[] = [], value = 0n) {
   const hash = await client.writeContract({
@@ -477,6 +481,7 @@ function Guarantees({ navigate }: { navigate: any }) {
 }
 function Issue() {
   const [status, setStatus] = useState("");
+  const [recurring, setRecurring] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const loadDemo = () => {
@@ -547,7 +552,13 @@ function Issue() {
       const sourceRules = JSON.stringify([source]);
       const outcomeRules = JSON.stringify(outcomes);
       const end = ts("coverageEnd", 4102444800n);
-      await write(
+      const recurringCount = Number(f.get("epochCount") || 2);
+      if (recurring) {
+        const firstStart = ts("coverageStart", 0n), duration = BigInt(String(f.get("epochDurationSeconds") || "0")), grace = BigInt(String(f.get("claimGraceSeconds") || "0"));
+        const recurringPayload=buildRecurringPayload({beneficiary:calldataBeneficiary,title,terms,epochCount:recurringCount,firstStart,epochDuration:duration,claimGrace:grace,escrowWei:escrow,sources:JSON.parse(sourceRules),outcomes});
+        setStatus(`Maximum liability: ${formatGen(escrow)} GEN · ${formatGen(escrow / BigInt(recurringCount))} GEN per epoch. Awaiting wallet approval…`);
+        await write("create_recurring_guarantee", recurringPayload, escrow);
+      } else await write(
         "create_guarantee",
         [
           calldataBeneficiary,
@@ -592,6 +603,7 @@ function Issue() {
       </Card>
       <Card>
         <form ref={formRef} onSubmit={submit} className="form">
+          <label><span>Guarantee mode</span><select value={recurring ? "recurring" : "single"} onChange={(event) => setRecurring(event.target.value === "recurring")}><option value="single">Single coverage (existing REDEEM)</option><option value="recurring">Recurring coverage epochs (new)</option></select></label>
           <label>
             Beneficiary address
             <input name="beneficiary" placeholder="0x…" required />
@@ -613,10 +625,13 @@ function Issue() {
             />
           </label>
           <div className="twocol">
-            <label>
+            {recurring && <><label>Epoch count (2–12)<input name="epochCount" type="number" min="2" max="12" defaultValue="4" required /></label><label>Epoch duration (seconds)<input name="epochDurationSeconds" type="number" min="1" defaultValue="604800" required /></label><label>Claim grace after epoch ends (seconds)<input name="claimGraceSeconds" type="number" min="1" defaultValue="604800" required /></label></>}
+            {!recurring && <><label>
               Escrow (GEN)
               <input name="escrow" type="number" min="1" required />
-            </label>
+            </label></>}
+            {recurring && <label>Maximum total liability (GEN)<input name="escrow" type="number" min="1" required /></label>}
+            {!recurring && <>
             <label>
               Coverage start
               <input name="coverageStart" type="datetime-local" required />
@@ -633,6 +648,7 @@ function Issue() {
               Claim deadline
               <input name="claimDeadline" type="datetime-local" required />
             </label>
+            </>}
           </div>
           <div className="rule">
             <div className="eyebrow">EVIDENCE SOURCE</div>
@@ -807,6 +823,19 @@ function Detail({ id, wallet }: { id: string; wallet: string }) {
     </>
   );
 }
+function RecurringDetail({ id }: { id: string }) {
+  const [parent,setParent]=useState<any>(null);const [epochs,setEpochs]=useState<any[]>([]);const [histories,setHistories]=useState<any[][]>([]);const [error,setError]=useState("");const [busy,setBusy]=useState("");const [wallet,setWallet]=useState("");
+  const refresh=async()=>{const p=await read("get_recurring_guarantee",[Number(id)]);setParent(p);const rows=await Promise.all(Array.from({length:Number(p.epoch_count)},(_,n)=>read("get_epoch",[Number(id),n])));setEpochs(rows);setHistories(await Promise.all(rows.map(async(e:any,n:number)=>{const out:any[]=[];for(let r=1;r<=Number(e.review_attempts);r++)try{out.push(await read("get_epoch_manifest",[Number(id),n,false,r]))}catch{continue}for(let r=1;r<=Number(e.challenge_attempts);r++)try{out.push(await read("get_epoch_manifest",[Number(id),n,true,r]))}catch{continue}return out}))) };
+  useEffect(()=>{void refresh().catch(e=>setError(e.message));const sync=()=>void restoreInjectedWallet(window.ethereum,(provider,account)=>createClient({chain:studionet,provider,account:account as `0x${string}`})).then(x=>{client=x?.client||null;setWallet(x?.account||"")}).catch(()=>{client=null;setWallet("")});sync();window.ethereum?.on?.("accountsChanged",sync);window.ethereum?.on?.("chainChanged",sync);return()=>{window.ethereum?.removeListener?.("accountsChanged",sync);window.ethereum?.removeListener?.("chainChanged",sync)}},[id]);
+  const act=async(method:string,n?:number,value=0n)=>{try{setBusy(method+(n??""));await write(method,n===undefined?[Number(id)]:[Number(id),n],value);await refresh()}catch(e:any){setError(e.message)}finally{setBusy("")}};
+  const now=Math.floor(Date.now()/1000);
+  if(error)return <Card className="empty"><h3>Unable to read recurring guarantee</h3><p>{error}</p></Card>;if(!parent)return <Card className="empty">Loading recurring guarantee…</Card>;
+  return <><section className="pagehead"><div className="eyebrow">RECURRING GUARANTEE #{id}</div><h1>{parent.title}</h1><p>{parent.terms}</p></section><Card><div className="eyebrow">PARENT ACCOUNTING · {parent.status===0?"ACTIVE":"FINALIZED"}</div><div className="money"><span>Funded<strong>{formatGen(parent.funded)} GEN</strong></span><span>Remaining<strong>{formatGen(parent.remaining)} GEN</strong></span><span>Paid<strong>{formatGen(parent.paid)} GEN</strong></span><span>Refunded<strong>{formatGen(parent.refunded)} GEN</strong></span></div>{parent.status===0&&epochs.every(e=>[5,6,7,8].includes(Number(e.status)))&&<button className="action-button enabled" disabled={!!busy||!wallet||!client} onClick={()=>act("finalize_recurring")}>{busy==="finalize_recurring"?"Working…":"Finalize parent and refund unused liability"}</button>}</Card><h2>Coverage timeline</h2><div className="grid">{epochs.map((e,n)=>{const status=Number(e.status),connected=!!wallet&&!!client,beneficiary=connected&&addressKey(parent.beneficiary)===wallet.toLowerCase(),party=connected&&(addressKey(parent.issuer)===wallet.toLowerCase()||beneficiary);const bondAmount=BigInt(e.liability)*500n/10000n;const retryNow=now>=Number(e.last_review_attempt_at)+3600&&(now<Number(e.opened_at)+604800||(now<Number(e.opened_at)+608400&&Number(e.last_review_attempt_at)<=Number(e.opened_at)+604800));const challengeRetry=now>=Number(e.last_challenge_attempt_at)+3600&&now<Number(e.challenge_opened_at)+608400&&Number(e.last_challenge_attempt_at)<=Number(e.challenge_opened_at)+604800;const actions:[string,boolean,bigint?][]=[["open_epoch",status===0&&!!beneficiary&&now>=Number(e.coverage_end)&&now<=Number(e.claim_deadline)],["evaluate_epoch",connected&&[1,2].includes(status)&&retryNow],["challenge_epoch",status===3&&!!party&&now<Number(e.challenge_deadline),bondAmount],["resolve_epoch_challenge",connected&&status===4&&challengeRetry],["finalize_epoch",connected&&status===3&&now>=Number(e.challenge_deadline)],["finalize_epoch_inconclusive",connected&&status===2&&now>=Number(e.opened_at)+608400&&now>=Number(e.last_review_attempt_at)+3600],["finalize_stalled_epoch_challenge",connected&&status===4&&now>=Number(e.challenge_opened_at)+608400&&now>=Number(e.last_challenge_attempt_at)+3600],["expire_epoch",connected&&status===0&&now>Number(e.claim_deadline)]];return <Card key={n}><div className="eyebrow">EPOCH {n+1} · {STATUSES[status]||["","","","","","SETTLED_PAID","SETTLED_DENIED","EXPIRED_REFUNDED","INCONCLUSIVE_REFUNDED"][status]||"UNKNOWN"}</div><p>Coverage {new Date(Number(e.coverage_start)*1000).toLocaleString()} – {new Date(Number(e.coverage_end)*1000).toLocaleString()}</p><p>Claim deadline {new Date(Number(e.claim_deadline)*1000).toLocaleString()}</p><p>Liability <strong>{formatGen(e.liability)} GEN</strong></p><p>Outcome {e.final_code||e.provisional_code||"Pending"}</p><p>Paid {formatGen(e.paid)} GEN · Refunded {formatGen(e.refunded)} GEN</p>{actions.filter(([,enabled])=>enabled).map(([method,,value])=><button key={method} className="action-button enabled" disabled={!!busy} onClick={()=>act(method,n,value||0n)}>{busy===method+n?"Working…":method.replaceAll("_"," ")}{method==="challenge_epoch"?` · ${formatGen(value||0n)} GEN`:""}</button>)}{(histories[n]||[]).map((m,i)=><div className="rule" key={i}><small>{m.phase} · {m.status} · {m.outcome_code||"NO OUTCOME"}</small><p>{m.evidence_summary}</p><p>{m.reasoning}</p></div>)}</Card>})}</div>{!wallet&&<p className="muted">Connect a Studionet wallet to submit epoch actions. Evaluations and finalization are permissionless.</p>}{error&&<p className="status">{error}</p>}</>
+}
+function RecurringList({navigate}:{navigate:(path:string)=>void}) {
+ const [rows,setRows]=useState<any[]>([]);const [error,setError]=useState("");const [start,setStart]=useState(0);const [counter,setCounter]=useState(0);useEffect(()=>{fetchRecurring(start).then(result=>{setRows(result.rows);setCounter(result.counter)}).catch(e=>setError(e.message))},[start]);
+ return <><section className="pagehead"><div className="eyebrow">RECURRING COVERAGE</div><h1>One promise.<br/><em>Many periods.</em></h1><p>Each epoch is independently claimable, reviewed, challenged and settled.</p><Button onClick={()=>navigate("/issue")}>Create recurring guarantee <ArrowRight size={17}/></Button></section>{error?<Card className="empty"><p>{error}</p></Card>:<><div className="grid">{rows.map(g=><Card key={g.id}><div className="eyebrow">PARENT #{g.id}</div><h3>{g.title}</h3><p>{g.epoch_count} coverage epochs · {g.status===0?"ACTIVE":"FINALIZED"}</p><p>Funded {formatGen(g.funded)} GEN · Remaining {formatGen(g.remaining)} GEN</p><button className="textbtn" onClick={()=>navigate(`/recurring/${g.id}`)}>View timeline <ArrowRight size={15}/></button></Card>)}</div><div className="hero-actions"><Button secondary disabled={start===0} onClick={()=>setStart(Math.max(0,start-25))}>Previous</Button><Button secondary disabled={start+25>=counter} onClick={()=>setStart(start+25)}>Next</Button></div></>}</>
+}
 function About({ navigate }: { navigate: any }) {
   return (
     <>
@@ -859,6 +888,8 @@ function App() {
       <Issue />
     ) : path === "/guarantees" ? (
       <Guarantees navigate={navigate} />
+    ) : path === "/recurring" ? (
+      <RecurringList navigate={navigate} />
     ) : path === "/my-rights" ? (
       <Collection
         title="Your rights"
@@ -884,6 +915,8 @@ function App() {
         </p>
         <Button onClick={() => navigate("/issue")}>Issue guarantee <ArrowRight size={17} /></Button>
       </Card>
+    ) : path.startsWith("/recurring/") ? (
+      <RecurringDetail id={path.split("/")[2]} />
     ) : path.startsWith("/guarantees/") ? (
       <Detail id={path.split("/")[2]} wallet={wallet} />
     ) : (
