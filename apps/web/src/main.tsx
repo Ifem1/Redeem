@@ -7,7 +7,7 @@ import { studionet } from "genlayer-js/chains";
 import { TransactionStatus } from "genlayer-js/types";
 import { getAddress } from "viem";
 import { ArrowRight, Copy, Menu, X, Wallet, Zap } from "lucide-react";
-import { CHAIN_ID, STATUSES, bond, buildRecurringPayload, formatGen, guards, parseGen } from "./protocol.js";
+import { CHAIN_ID, STATUSES, bond, buildRecurringPayload, formatGen, guards, lifecycle, parseGen } from "./protocol.js";
 import { connectInjectedWallet, restoreInjectedWallet } from "./wallet";
 import { makeDemoIssueValues, makeDemoOutcomeValues } from "./demo";
 
@@ -134,9 +134,10 @@ async function write(name: string, args: any[] = [], value = 0n) {
     args,
     value,
   });
-  const receipt = await client.waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED });
-  if (receipt.resultName === "MAJORITY_DISAGREE" || receipt.resultName === "NO_MAJORITY" || receipt.resultName === "DISAGREE") throw Error("Consensus is undetermined.");
-  if (receipt.resultName !== "SUCCESS") throw Error("Contract execution failed.");
+  const receipt = await client.waitForTransactionReceipt({ hash, status: TransactionStatus.FINALIZED, fullTransaction: true });
+  const state = lifecycle(receipt);
+  if (state === "UNDETERMINED") throw Error("Consensus is undetermined.");
+  if (state !== "EXECUTED") throw Error("Contract execution failed.");
   return receipt;
 }
 function Shell({
