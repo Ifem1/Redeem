@@ -1,0 +1,21 @@
+{
+  "demo": "redeem-recurring-three-epoch-v1",
+  "purpose": "Deterministic public fixture for demonstrating independent recurring epoch classification. This is synthetic demonstration evidence, not a production service attestation.",
+  "records": [
+    {
+      "epoch_index": 0,
+      "coverage_result": "MET",
+      "statement": "For recurring demonstration epoch index 0, the service condition was met throughout its defined coverage period."
+    },
+    {
+      "epoch_index": 1,
+      "coverage_result": "MAJOR",
+      "statement": "For recurring demonstration epoch index 1, the service condition suffered a major breach throughout its defined coverage period."
+    },
+    {
+      "epoch_index": 2,
+      "coverage_result": "MET",
+      "statement": "For recurring demonstration epoch index 2, the service condition was met throughout its defined coverage period."
+    }
+  ]
+}
