@@ -9,7 +9,7 @@ import { getAddress } from "viem";
 import { ArrowRight, Copy, Menu, X, Wallet, Zap } from "lucide-react";
 import { CHAIN_ID, STATUSES, bond, buildRecurringPayload, formatGen, guards, parseGen } from "./protocol.js";
 import { connectInjectedWallet, restoreInjectedWallet } from "./wallet";
-import { makeDemoIssueValues } from "./demo";
+import { makeDemoIssueValues, makeDemoOutcomeValues } from "./demo";
 
 const address = import.meta.env.VITE_REDEEM_CONTRACT_ADDRESS || "";
 let client: any = null;
@@ -484,6 +484,12 @@ function Issue() {
   const [recurring, setRecurring] = useState(false);
   const [demoMode, setDemoMode] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const setDemoOutcomes = (isRecurring: boolean) => {
+    Object.entries(makeDemoOutcomeValues(isRecurring)).forEach(([name, value]) => {
+      const field = formRef.current?.elements.namedItem(name) as HTMLInputElement | null;
+      if (field) field.value = value;
+    });
+  };
   const loadDemo = () => {
     const values = makeDemoIssueValues();
     Object.entries(values).forEach(([name, value]) => {
@@ -492,6 +498,7 @@ function Issue() {
     });
     const required = formRef.current?.elements.namedItem("required") as HTMLInputElement | null;
     if (required) required.checked = true;
+    if (recurring) setDemoOutcomes(true);
     setDemoMode(true);
     setStatus("Demo values loaded. Review them, then choose whether to fund this real guarantee.");
   };
@@ -554,7 +561,7 @@ function Issue() {
       const end = ts("coverageEnd", 4102444800n);
       const recurringCount = Number(f.get("epochCount") || 2);
       if (recurring) {
-        const firstStart = ts("coverageStart", 0n), duration = BigInt(String(f.get("epochDurationSeconds") || "0")), grace = BigInt(String(f.get("claimGraceSeconds") || "0"));
+        const firstStart = ts("firstCoverageStart", 0n), duration = BigInt(String(f.get("epochDurationSeconds") || "0")), grace = BigInt(String(f.get("claimGraceSeconds") || "0"));
         const recurringPayload=buildRecurringPayload({beneficiary:calldataBeneficiary,title,terms,epochCount:recurringCount,firstStart,epochDuration:duration,claimGrace:grace,escrowWei:escrow,sources:JSON.parse(sourceRules),outcomes});
         setStatus(`Maximum liability: ${formatGen(escrow)} GEN · ${formatGen(escrow / BigInt(recurringCount))} GEN per epoch. Awaiting wallet approval…`);
         await write("create_recurring_guarantee", recurringPayload, escrow);
@@ -603,7 +610,7 @@ function Issue() {
       </Card>
       <Card>
         <form ref={formRef} onSubmit={submit} className="form">
-          <label><span>Guarantee mode</span><select value={recurring ? "recurring" : "single"} onChange={(event) => setRecurring(event.target.value === "recurring")}><option value="single">Single coverage (existing REDEEM)</option><option value="recurring">Recurring coverage epochs (new)</option></select></label>
+          <label><span>Guarantee mode</span><select value={recurring ? "recurring" : "single"} onChange={(event) => { const isRecurring = event.target.value === "recurring"; setRecurring(isRecurring); if (demoMode) setDemoOutcomes(isRecurring); }}><option value="single">Single coverage (existing REDEEM)</option><option value="recurring">Recurring coverage epochs (new)</option></select></label>
           <label>
             Beneficiary address
             <input name="beneficiary" placeholder="0x…" required />
@@ -625,7 +632,7 @@ function Issue() {
             />
           </label>
           <div className="twocol">
-            {recurring && <><label>Epoch count (2–12)<input name="epochCount" type="number" min="2" max="12" defaultValue="4" required /></label><label>Epoch duration (seconds)<input name="epochDurationSeconds" type="number" min="1" defaultValue="604800" required /></label><label>Claim grace after epoch ends (seconds)<input name="claimGraceSeconds" type="number" min="1" defaultValue="604800" required /></label></>}
+            {recurring && <><label>First coverage start<input name="firstCoverageStart" type="datetime-local" defaultValue={demoMode ? makeDemoIssueValues().firstCoverageStart : ""} required /></label><label>Epoch count (2–12)<input name="epochCount" type="number" min="2" max="12" defaultValue="4" required /></label><label>Epoch duration (seconds)<input name="epochDurationSeconds" type="number" min="1" defaultValue="604800" required /></label><label>Claim grace after epoch ends (seconds)<input name="claimGraceSeconds" type="number" min="1" defaultValue="604800" required /></label></>}
             {!recurring && <><label>
               Escrow (GEN)
               <input name="escrow" type="number" min="1" required />
