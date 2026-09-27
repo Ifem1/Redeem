@@ -1,5 +1,7 @@
 # Live verification
 
+This document records the historical single-guarantee live cycle for the previously accepted deployment. Recurring milestone evidence is separate in [RECURRING_LIVE_VERIFICATION.md](RECURRING_LIVE_VERIFICATION.md).
+
 Network: GenLayer Studionet (chain 61999). Canonical deployment: `0xAf5972b86E7491ea3D16CcBb45c2c7FE358f91d2`.
 
 Source commit: `23551558807073dacebf5659f62217f6d9ee8cba`. Deployment transaction: `0xeb85d6f5ef1d2c52a4bc519d8a1ceb8d838a8d0776f3280cfe7b6df68030cbc0`.

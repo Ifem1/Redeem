@@ -23,4 +23,4 @@ VITE_REDEEM_CHAIN_ID=61999
 VITE_REDEEM_RPC_URL=https://studio.genlayer.com/api
 ```
 
-Do not commit wallet keys. No recurring live transaction proof has been produced because the issuer and beneficiary signer keys were unavailable in this environment.
+Do not commit wallet keys. The three-epoch live protocol cycle is recorded in [RECURRING_LIVE_VERIFICATION.md](RECURRING_LIVE_VERIFICATION.md). Its pinned fixture is synthetic protocol evidence, not an assertion about a production service. No Vercel deployment is claimed.

@@ -116,7 +116,7 @@ V1 deliberately focuses on one guarantee, one issuer, one named beneficiary, and
 
 ## Recurring Guarantees milestone
 
-The original REDEEM path remains a single guarantee with one redemption lifecycle and one terminal settlement. The recurring coverage milestone adds a separate parent agreement containing 2–12 predefined fixed-duration epochs. Each epoch has its own eligibility, evidence review, provisional result, challenge, and settlement; deterministic code applies the frozen outcome basis points to an equal per-epoch liability. Beneficiary payouts reduce parent remaining liability immediately. Unused liability stays in the parent until every epoch is terminal, then anyone can finalize the parent and refund the remainder to the issuer. The milestone contract is deployed on Studionet at `0x4a04d24fF3184c09b32dFB999096CC237DCC9f1C`; no recurring live transaction demonstration is claimed yet. See [MILESTONE.md](docs/MILESTONE.md) for the baseline evidence, implementation delta, verification, and remaining limitation.
+The original REDEEM path remains a single guarantee with one redemption lifecycle and one terminal settlement. The recurring coverage milestone adds a separate parent agreement containing 2–12 predefined fixed-duration epochs. Each epoch has its own eligibility, evidence review, provisional result, challenge, and settlement; deterministic code applies the frozen outcome basis points to an equal per-epoch liability. Beneficiary payouts reduce parent remaining liability immediately. Unused liability stays in the parent until every epoch is terminal, then anyone can finalize the parent and refund the remainder to the issuer. The milestone contract is deployed on Studionet at `0x4a04d24fF3184c09b32dFB999096CC237DCC9f1C`; its three-epoch live protocol cycle is recorded in [RECURRING_LIVE_VERIFICATION.md](docs/RECURRING_LIVE_VERIFICATION.md). That cycle used a clearly labeled synthetic evidence fixture and is not a production service attestation. See [MILESTONE.md](docs/MILESTONE.md) for the baseline evidence and milestone delta.
 
 ## Repository structure
 
@@ -149,6 +149,7 @@ Configure `VITE_REDEEM_CONTRACT_ADDRESS` from `.env.example`; never commit secre
 | [CONTRACT_REVIEW.md](docs/CONTRACT_REVIEW.md) | Invariant review matrix |
 | [TESTING.md](docs/TESTING.md) | Counts, commands, limitations |
 | [DEPLOYMENT.md](docs/DEPLOYMENT.md) | Studionet procedure and evidence |
+| [RECURRING_LIVE_VERIFICATION.md](docs/RECURRING_LIVE_VERIFICATION.md) | Recurring three-epoch transaction evidence |
 | [ENVIRONMENT.md](docs/ENVIRONMENT.md) | Environment configuration |
 
 ## Deployment
