@@ -4,6 +4,22 @@
     "kwparams": {}
   },
   "methods": {
+    "challenge_epoch": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": true
+    },
     "challenge_redemption": {
       "params": [
         [
@@ -64,6 +80,70 @@
       "ret": "any",
       "payable": true
     },
+    "create_recurring_guarantee": {
+      "params": [
+        [
+          "beneficiary",
+          "address"
+        ],
+        [
+          "title",
+          "string"
+        ],
+        [
+          "terms",
+          "string"
+        ],
+        [
+          "first_start",
+          "int"
+        ],
+        [
+          "epoch_duration",
+          "int"
+        ],
+        [
+          "epoch_count",
+          "int"
+        ],
+        [
+          "claim_grace",
+          "int"
+        ],
+        [
+          "escrow_amount",
+          "int"
+        ],
+        [
+          "source_rules_json",
+          "string"
+        ],
+        [
+          "outcome_rules_json",
+          "string"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": true
+    },
+    "evaluate_epoch": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
     "evaluate_redemption": {
       "params": [
         [
@@ -76,7 +156,67 @@
       "ret": "any",
       "payable": false
     },
+    "expire_epoch": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "finalize_epoch": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "finalize_epoch_inconclusive": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
     "finalize_inconclusive": {
+      "params": [
+        [
+          "i",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "finalize_recurring": {
       "params": [
         [
           "i",
@@ -112,6 +252,22 @@
       "ret": "any",
       "payable": false
     },
+    "finalize_stalled_epoch_challenge": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
     "get_constants": {
       "params": [],
       "kwparams": {},
@@ -123,6 +279,79 @@
       "kwparams": {},
       "readonly": true,
       "ret": "dict"
+    },
+    "get_epoch": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": {
+        "status": "int",
+        "coverage_start": "int",
+        "coverage_end": "int",
+        "claim_deadline": "int",
+        "liability": "int",
+        "opened_at": "int",
+        "review_attempts": "int",
+        "last_review_attempt_at": "int",
+        "last_review_status": "string",
+        "provisional_code": "string",
+        "provisional_amount": "int",
+        "challenge_deadline": "int",
+        "challenger": "address",
+        "challenge_bond": "int",
+        "challenge_opened_at": "int",
+        "challenge_attempts": "int",
+        "last_challenge_attempt_at": "int",
+        "last_challenge_status": "string",
+        "final_code": "string",
+        "final_bps": "int",
+        "final_amount": "int",
+        "paid": "int",
+        "refunded": "int",
+        "terminal_reason": "string"
+      }
+    },
+    "get_epoch_manifest": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ],
+        [
+          "challenge",
+          "bool"
+        ],
+        [
+          "r",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": {
+        "guarantee_id": "int",
+        "phase": "string",
+        "round": "int",
+        "evaluated_at": "int",
+        "status": "string",
+        "outcome_code": "string",
+        "reasoning": "string",
+        "evidence_summary": "string",
+        "source_count": "int"
+      }
     },
     "get_evidence_manifest": {
       "params": [
@@ -229,6 +458,51 @@
       "readonly": true,
       "ret": "dict"
     },
+    "get_recurring_accounting": {
+      "params": [
+        [
+          "i",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "dict"
+    },
+    "get_recurring_counter": {
+      "params": [],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "int"
+    },
+    "get_recurring_guarantee": {
+      "params": [
+        [
+          "i",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": {
+        "issuer": "address",
+        "beneficiary": "address",
+        "title": "string",
+        "terms": "string",
+        "sources": "string",
+        "outcomes": "string",
+        "funded": "int",
+        "remaining": "int",
+        "paid": "int",
+        "refunded": "int",
+        "epoch_count": "int",
+        "duration": "int",
+        "first_start": "int",
+        "final_end": "int",
+        "claim_grace": "int",
+        "status": "int"
+      }
+    },
     "get_source_rule": {
       "params": [
         [
@@ -297,6 +571,37 @@
       "readonly": true,
       "ret": "array"
     },
+    "list_recurring": {
+      "params": [
+        [
+          "start",
+          "int"
+        ],
+        [
+          "limit",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": true,
+      "ret": "array"
+    },
+    "open_epoch": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
     "open_redemption": {
       "params": [
         [
@@ -325,6 +630,22 @@
       "params": [
         [
           "i",
+          "int"
+        ]
+      ],
+      "kwparams": {},
+      "readonly": false,
+      "ret": "any",
+      "payable": false
+    },
+    "resolve_epoch_challenge": {
+      "params": [
+        [
+          "i",
+          "int"
+        ],
+        [
+          "n",
           "int"
         ]
       ],
