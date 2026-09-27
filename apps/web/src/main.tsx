@@ -630,7 +630,7 @@ function Issue() {
               Escrow (GEN)
               <input name="escrow" type="number" min="1" required />
             </label></>}
-            {recurring && <label>Maximum total liability (GEN)<input name="escrow" type="number" min="1" required /></label>}
+            {recurring && <label>Maximum total liability (GEN)<input name="escrow" type="number" min="0.000000000000000001" step="any" required /></label>}
             {!recurring && <>
             <label>
               Coverage start
